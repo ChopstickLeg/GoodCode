@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/chopstickleg/good-code/db"
-	"github.com/gorilla/mux"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -35,10 +34,4 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO: Compare hashed password and generate JWT token
 
 	w.Write([]byte("Login successful"))
-}
-
-func ServeLogin() {
-	r := mux.NewRouter()
-	r.HandleFunc("/", LoginHandler).Methods("POST")
-	http.ListenAndServe(":8080", r)
 }
