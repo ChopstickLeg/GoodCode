@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/*.go": { "runtime": "go@1.x" }
+    "api/*.go": { "runtime": "go@1.23.4" }
   },
   "routes": [
     {
