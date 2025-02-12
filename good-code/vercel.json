@@ -1,25 +1,18 @@
 {
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build"
-    }
-  ],
+  "functions": {
+    "api/*.go": { "runtime": "vercel-go@0.5.1" }
+  },
   "routes": [
     {
-      "src": "/(.*).js",
-      "dest": "/$1.js"
+      "src": "/api/.*",
+      "dest": "/api/"
     },
     {
-      "src": "/(.*).css",
-      "dest": "/$1.css"
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-    "functions": {
-      "api/*.go": { "runtime": "vercel-go@0.5.1" }
-    }
+  ]
 }
