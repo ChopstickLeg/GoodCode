@@ -4,30 +4,34 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"os"
 
-	_ "github.com/tursodatabase/libsql-client-go/libsql"
+	"github.com/chopstickleg/good-code/db"
 )
 
-var dbUrl = os.Getenv("TURSO_DB_URL")
-var dbAuth = os.Getenv("TURSO_AUTH_TOKEN")
-
-func Handler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
-
-	conn, err := libsql.Open(dbUrl, libsql.WithAuthToken(dbAuth))
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	conn, err := db.GetDB()
 	if err != nil {
-		http.Error(w, "DB connection failed", http.StatusInternalServerError)
+		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+		return
 	}
-	defer conn.Close()
 
-	dataJson := map[string]interface{}{
-		"data": map[string]interface{}{
-			"message": "Hello World!",
-		},
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
-	err = json.NewEncoder(w).Encode(dataJson)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	var hashedPassword string
+	err = conn.QueryRow(context.Background(), "SELECT password FROM users WHERE email=$1", req.Email).Scan(&hashedPassword)
 	if err != nil {
-		http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
 	}
+
+	// TODO: Compare hashed password and generate JWT token
+
+	w.Write([]byte("Login successful"))
 }
