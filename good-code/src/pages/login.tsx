@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import SignInButton from "../buttons/MSSignIn.tsx";
+import GoogleSignInButton from "../buttons/GoogleSignIn.tsx";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -119,6 +121,12 @@ const Login = () => {
             >
               Sign up
             </button>
+          </div>
+          <div className="flex justify-center items-center text-gray-600 mt-3">
+            <SignInButton />
+          </div>
+          <div className="flex justify-center items-center text-gray-600 mt-3">
+            <GoogleSignInButton />
           </div>
         </form>
       </div>
