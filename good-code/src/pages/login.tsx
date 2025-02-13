@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SignInButton from "../buttons/MSSignIn.tsx";
 import GoogleSignInButton from "../buttons/GoogleSignIn.tsx";
+import GitHubSignInButton from "../buttons/GithubSignIn.tsx";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -127,6 +128,9 @@ const Login = () => {
           </div>
           <div className="flex justify-center items-center text-gray-600 mt-3">
             <GoogleSignInButton />
+          </div>
+          <div className="flex justify-center items-center text-gray-600 mt-3">
+            <GitHubSignInButton />
           </div>
         </form>
       </div>
