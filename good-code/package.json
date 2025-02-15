@@ -14,6 +14,7 @@
     "@azure/msal-react": "^3.0.4",
     "@fluentui/react": "^8.122.9",
     "@tailwindcss/postcss": "^4.0.5",
+    "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
     "dotenv": "^16.4.7",
     "react": "^18.3.1",
