@@ -9,7 +9,6 @@ const MSSignInButton: React.FC = () => {
       console.error("Authentication Error:", err);
     } else {
       console.log("Authentication Data:", data);
-      // Handle successful authentication here
     }
   };
 

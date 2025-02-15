@@ -1,11 +1,15 @@
 package handler
 
 import (
-	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/chopstickleg/good-code/db"
+	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,14 +28,39 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var hashedPassword string
-	err = conn.QueryRow(context.Background(), "SELECT password FROM users WHERE email=$1", req.Email).Scan(&hashedPassword)
-	if err != nil {
+	var hashedBytes []byte
+	err = conn.QueryRow("SELECT password FROM user_login WHERE email=$1 AND enabled=TRUE", req.Email).Scan(&hashedBytes)
+	if err == sql.ErrNoRows {
 		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	} else if err != nil {
+		http.Error(w, "Failed to retrieve user information", http.StatusInternalServerError)
 		return
 	}
 
-	// TODO: Compare hashed password and generate JWT token
+	incoming := []byte(req.Password)
+	matchErr := bcrypt.CompareHashAndPassword(hashedBytes, incoming)
+	if matchErr != nil {
+		http.Error(w, "Invalid password", http.StatusUnauthorized)
+		return
+	}
 
-	w.Write([]byte("Login successful"))
+	secretKey := os.Getenv("JWT_SECRET_KEY")
+	if secretKey == "" {
+		http.Error(w, "JWT_SECRET_KEY environment variable not set", http.StatusInternalServerError)
+		return
+	}
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["email"] = req.Email
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+
+	signedToken, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		http.Error(w, "Failed to generate JWT token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"token":"` + signedToken + `"}`))
 }

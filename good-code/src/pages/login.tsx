@@ -5,7 +5,7 @@ import GoogleSignInButton from "../buttons/GoogleSignIn.tsx";
 import GitHubSignInButton from "../buttons/GithubSignIn.tsx";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,11 +17,12 @@ const Login = () => {
     e.preventDefault();
 
     setIsLoading(true);
+    console.log(JSON.stringify({ email, password }));
     try {
       const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
       if (response.ok) {
         navigate("/");
@@ -47,10 +48,10 @@ const Login = () => {
             <div>
               <input
                 type="email"
-                id="username"
+                id="email"
                 placeholder="Email"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
                 required
               />

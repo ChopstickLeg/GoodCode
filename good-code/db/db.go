@@ -1,30 +1,29 @@
 package db
 
 import (
-	"context"
+	"database/sql"
 	"errors"
 	"log"
 	"os"
 	"sync"
 
-	"github.com/jackc/pgx/v5"
+	_ "github.com/lib/pq"
 )
 
 var (
-	db     *pgx.Conn
+	db     *sql.DB
 	dbOnce sync.Once
 )
 
-func GetDB() (*pgx.Conn, error) {
+func GetDB() (*sql.DB, error) {
 	var err error
 	dbOnce.Do(func() {
-		dbURL := os.Getenv("DATABASE_URL")
+		dbURL := os.Getenv("DATABASE_DATABASE_URL")
 		if dbURL == "" {
 			err = errors.New("DATABASE_URL environment variable not set")
-
 		}
 
-		conn, err := pgx.Connect(context.Background(), dbURL)
+		conn, err := sql.Open("postgres", dbURL)
 		if err != nil {
 			log.Fatal("Failed to connect to Neon Postgres:", err)
 		}
