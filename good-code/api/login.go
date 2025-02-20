@@ -62,5 +62,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"token":"` + signedToken + `"}`))
+	response := json.NewEncoder(w)
+
+	err = response.Encode(map[string]string{"token": signedToken})
+	if err != nil {
+		http.Error(w, "Failed to send response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

@@ -41,7 +41,7 @@ const SignUp = () => {
     mutationFn: signupMutationFn,
     onSuccess: (result) => {
       if (result.success) {
-        navigate("/");
+        navigate("/login");
       }
     },
     onError: (error) => {

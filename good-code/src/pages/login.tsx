@@ -16,7 +16,7 @@ const Login = () => {
   const loginMutationFn = async (data: {
     email: string;
     password: string;
-  }): Promise<{ success: boolean }> => {
+  }) => {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
@@ -26,11 +26,13 @@ const Login = () => {
         body: JSON.stringify(data),
       });
 
+      const result = await response.json();
+      console.log(result)
+
       if (!response.ok) {
         throw new Error("Invalid credentials");
       }
-
-      return response.json();
+      return { success: !!result.token, token: result.token };
     } catch (error) {
       throw error;
     }
@@ -43,10 +45,13 @@ const Login = () => {
   >({
     mutationFn: loginMutationFn,
     onSuccess: (result) => {
+      console.log(result)
       if (result.success) {
+        console.log("Login successful")
         navigate("/");
       }
     },
+
     onError: (error) => {
       console.error("Login failed:", error);
       setError(
@@ -57,6 +62,7 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("Submit clicked")
     setError("");
 
     loginUser({ email, password });

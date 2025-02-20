@@ -38,5 +38,12 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("User registered"))
+	w.Header().Set("Content-Type", "application/json")
+	response := json.NewEncoder(w)
+
+	err = response.Encode(map[string]bool{"success": true})
+	if err != nil {
+		http.Error(w, "Failed to send response: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
