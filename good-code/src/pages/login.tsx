@@ -1,40 +1,65 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import SignInButton from "../buttons/MSSignIn.tsx";
-import GoogleSignInButton from "../buttons/GoogleSignIn.tsx";
-import GitHubSignInButton from "../buttons/GithubSignIn.tsx";
+// import SignInButton from "../auth/MSSignIn.tsx";
+// import GoogleSignInButton from "../auth/GoogleSignIn.tsx";
+// import GitHubSignInButton from "../auth/GithubSignIn.tsx";
+import { useMutation } from "@tanstack/react-query";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    setIsLoading(true);
-    console.log(JSON.stringify({ email, password }));
+  const loginMutationFn = async (data: {
+    email: string;
+    password: string;
+  }): Promise<{ success: boolean }> => {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
-      if (response.ok) {
-        navigate("/");
-      } else {
-        setError("Invalid credentials");
+
+      if (!response.ok) {
+        throw new Error("Invalid credentials");
       }
+
+      return response.json();
     } catch (error) {
-      console.error(error);
-      setError("An error occurred while logging in");
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
+  };
+
+  const { mutate: loginUser, isPending } = useMutation<
+    { success: boolean },
+    Error,
+    { email: string; password: string }
+  >({
+    mutationFn: loginMutationFn,
+    onSuccess: (result) => {
+      if (result.success) {
+        navigate("/");
+      }
+    },
+    onError: (error) => {
+      console.error("Login failed:", error);
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+
+    loginUser({ email, password });
   };
 
   return (
@@ -82,10 +107,10 @@ const Login = () => {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isPending}
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 mb-3"
           >
-            {isLoading ? (
+            {isPending ? (
               <div className="flex items-center justify-center">
                 <svg
                   className="animate-spin h-5 w-5 mr-3"
@@ -124,7 +149,7 @@ const Login = () => {
               Sign up
             </button>
           </div>
-          <div className="flex justify-center items-center text-gray-600 mt-3">
+          {/* <div className="flex justify-center items-center text-gray-600 mt-3">
             <SignInButton />
           </div>
           <div className="flex justify-center items-center text-gray-600 mt-3">
@@ -133,6 +158,7 @@ const Login = () => {
           <div className="flex justify-center items-center text-gray-600 mt-3">
             <GitHubSignInButton />
           </div>
+          TODO: Add login with Microsoft, Google, and GitHub if possible*/}
         </form>
       </div>
     </div>

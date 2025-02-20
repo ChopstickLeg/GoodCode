@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
+import Signup from "./pages/signup"
 import Login from "./pages/login";
 
 function App() {
@@ -28,7 +29,8 @@ function App() {
             </>
           }
         />
-        <Route path="/login" element={<Login />}></Route>
+        <Route path="/login" element={<Login />}  />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
     </Router>
   );
