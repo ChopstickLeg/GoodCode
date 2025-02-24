@@ -8,11 +8,13 @@ import (
 
 	"github.com/chopstickleg/good-code/db"
 	"github.com/dgrijalva/jwt-go"
+	"gorm.io/gorm"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	//TODO Rewrite error handling to send errors as a JSON object
 	conn, err := db.GetDB()
 	if err != nil {
 		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
@@ -34,7 +36,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Find(&hashedBytes).
 		Error
 	if err != nil {
-		http.Error(w, "Error querying DB", http.StatusInternalServerError)
+		if err == gorm.ErrRecordNotFound {
+			http.Error(w, "User does not exist", http.StatusBadRequest)
+			return
+		} else {
+			http.Error(w, "Error querying DB", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	incoming := []byte(req.Password)
