@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -9,6 +8,7 @@ import (
 
 	"github.com/chopstickleg/good-code/db"
 	"github.com/dgrijalva/jwt-go"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -29,13 +29,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var hashedBytes []byte
-	err = conn.QueryRow("SELECT password FROM user_login WHERE email=$1 AND enabled=TRUE", req.Email).Scan(&hashedBytes)
-	if err == sql.ErrNoRows {
-		http.Error(w, "User not found", http.StatusUnauthorized)
-		return
-	} else if err != nil {
-		http.Error(w, "Failed to retrieve user information", http.StatusInternalServerError)
-		return
+	err = conn.Model(&db.User{}).
+		Select("password").
+		Find(&hashedBytes).
+		Error
+	if err != nil {
+		http.Error(w, "Error querying DB", http.StatusInternalServerError)
 	}
 
 	incoming := []byte(req.Password)

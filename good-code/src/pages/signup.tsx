@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
+import { Helmet } from "react-helmet";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -65,6 +66,9 @@ const SignUp = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Sign Up</title>
+      </Helmet>
       <div className="flex items-center justify-center h-full">
         <form onSubmit={handleSubmit}>
           <h2 className="text-2xl font-bold text-center mb-5">Sign Up</h2>

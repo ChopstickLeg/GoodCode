@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 // import SignInButton from "../auth/MSSignIn.tsx";
 // import GoogleSignInButton from "../auth/GoogleSignIn.tsx";
 // import GitHubSignInButton from "../auth/GithubSignIn.tsx";
@@ -13,10 +14,7 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const loginMutationFn = async (data: {
-    email: string;
-    password: string;
-  }) => {
+  const loginMutationFn = async (data: { email: string; password: string }) => {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
@@ -27,7 +25,6 @@ const Login = () => {
       });
 
       const result = await response.json();
-      console.log(result)
 
       if (!response.ok) {
         throw new Error("Invalid credentials");
@@ -45,10 +42,9 @@ const Login = () => {
   >({
     mutationFn: loginMutationFn,
     onSuccess: (result) => {
-      console.log(result)
       if (result.success) {
-        console.log("Login successful")
-        navigate("/");
+        console.log("Login successful");
+        navigate("/home");
       }
     },
 
@@ -62,7 +58,7 @@ const Login = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submit clicked")
+    console.log("Submit clicked");
     setError("");
 
     loginUser({ email, password });
@@ -70,6 +66,9 @@ const Login = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Login</title>
+      </Helmet>
       <div className="flex items-center justify-center h-full">
         <form onSubmit={handleSubmit} className="">
           <h2 className="text-2xl font-bold text-center mb-5">Login</h2>

@@ -24,15 +24,17 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var count int
-	err = conn.QueryRow("SELECT COUNT(*) FROM user_login WHERE email=$1", req.Email).Scan(&count)
+	var count int64
+	err = conn.Model(&db.User{}).
+		Where("email = ?", req.Email).
+		Count(&count).
+		Error
 	if err != nil {
-		http.Error(w, "Failed to check if user exists: "+err.Error(), http.StatusInternalServerError)
-		return
+		http.Error(w, "Error getting existing users from db", http.StatusInternalServerError)
 	}
+
 	if count > 0 {
-		http.Error(w, "User already exists", http.StatusConflict)
-		return
+		http.Error(w, "Email already exists", http.StatusBadRequest)
 	}
 
 	passByte := []byte(req.Password)
@@ -43,7 +45,14 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = conn.Exec("INSERT INTO user_login (email, password, enabled) VALUES ($1, $2, TRUE)", req.Email, hashByte)
+	user := db.User{
+		Email:    req.Email,
+		Password: hashByte,
+		Enabled:  true,
+	}
+
+	err = conn.Create(user).Error
+
 	if err != nil {
 		http.Error(w, "Failed to create user: "+err.Error(), http.StatusInternalServerError)
 		return

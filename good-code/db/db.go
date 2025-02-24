@@ -1,21 +1,21 @@
 package db
 
 import (
-	"database/sql"
 	"errors"
 	"log"
 	"os"
 	"sync"
 
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var (
-	db     *sql.DB
+	db     *gorm.DB
 	dbOnce sync.Once
 )
 
-func GetDB() (*sql.DB, error) {
+func GetDB() (*gorm.DB, error) {
 	var err error
 	dbOnce.Do(func() {
 		dbURL := os.Getenv("DATABASE_DATABASE_URL")
@@ -23,7 +23,7 @@ func GetDB() (*sql.DB, error) {
 			err = errors.New("DATABASE_URL environment variable not set")
 		}
 
-		conn, err := sql.Open("postgres", dbURL)
+		conn, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 		if err != nil {
 			log.Fatal("Failed to connect to Neon Postgres:", err)
 		}
