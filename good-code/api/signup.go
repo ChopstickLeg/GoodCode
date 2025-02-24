@@ -24,6 +24,17 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var count int
+	err = conn.QueryRow("SELECT COUNT(*) FROM user_login WHERE email=$1", req.Email).Scan(&count)
+	if err != nil {
+		http.Error(w, "Failed to check if user exists: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if count > 0 {
+		http.Error(w, "User already exists", http.StatusConflict)
+		return
+	}
+
 	passByte := []byte(req.Password)
 	hashByte, err := bcrypt.GenerateFromPassword(passByte, 1)
 
