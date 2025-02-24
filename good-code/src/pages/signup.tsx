@@ -56,7 +56,11 @@ const SignUp = () => {
     e.preventDefault();
     setError("");
 
-    signupUser({ email, password });
+    if (password == confirmPassword) {
+      signupUser({ email, password });
+    } else {
+      setError("Passwords do not match");
+    }
   };
 
   return (
