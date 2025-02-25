@@ -14,7 +14,6 @@ import (
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO Rewrite error handling to send errors as a JSON object
 	conn, err := db.GetDB()
 	if err != nil {
 		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
@@ -30,23 +29,24 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var hashedBytes []byte
-	err = conn.Model(&db.User{}).
-		Select("password").
-		Find(&hashedBytes).
+	var user db.User_login
+	err = conn.Model(&db.User_login{}).
+		Where("email = ?", req.Email).
+		Find(&user).
 		Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			http.Error(w, "User does not exist", http.StatusBadRequest)
 			return
 		} else {
-			http.Error(w, "Error querying DB", http.StatusInternalServerError)
+			http.Error(w, "Error querying DB: " + err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 
 	incoming := []byte(req.Password)
-	matchErr := bcrypt.CompareHashAndPassword(hashedBytes, incoming)
+	
+	matchErr := bcrypt.CompareHashAndPassword(user.Password, incoming)
 	if matchErr != nil {
 		http.Error(w, "Invalid password", http.StatusUnauthorized)
 		return

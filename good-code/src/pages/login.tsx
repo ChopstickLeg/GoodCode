@@ -24,11 +24,11 @@ const Login = () => {
         body: JSON.stringify(data),
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error("Invalid credentials");
+        throw new Error(await response.text());
       }
+
+      const result = await response.json();
       return { success: !!result.token, token: result.token };
     } catch (error) {
       throw error;

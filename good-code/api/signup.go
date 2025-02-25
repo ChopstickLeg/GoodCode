@@ -25,27 +25,29 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var count int64
-	err = conn.Model(&db.User{}).
+	err = conn.Model(&db.User_login{}).
 		Where("email = ?", req.Email).
 		Count(&count).
 		Error
 	if err != nil {
 		http.Error(w, "Error getting existing users from db", http.StatusInternalServerError)
+		return
 	}
 
 	if count > 0 {
-		http.Error(w, "Email already exists", http.StatusBadRequest)
+		http.Error(w, "Email already exists", http.StatusUnauthorized)
+		return
 	}
 
 	passByte := []byte(req.Password)
-	hashByte, err := bcrypt.GenerateFromPassword(passByte, 1)
+	hashByte, err := bcrypt.GenerateFromPassword(passByte, bcrypt.DefaultCost)
 
 	if err != nil {
 		http.Error(w, "Error hashing password", http.StatusInternalServerError)
 		return
 	}
 
-	user := db.User{
+	user := db.User_login{
 		Email:    req.Email,
 		Password: hashByte,
 		Enabled:  true,

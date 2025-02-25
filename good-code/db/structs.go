@@ -1,11 +1,6 @@
 package db
 
-import (
-	"gorm.io/gorm"
-)
-
-type User struct {
-	gorm.Model
+type User_login struct {
 	ID       int
 	Email    string
 	Password []byte

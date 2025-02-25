@@ -25,10 +25,10 @@ const SignUp = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Invalid credentials");
+        throw new Error(await response.text());
       }
 
-      return response.json();
+      return await response.json();
     } catch (error) {
       throw error;
     }
