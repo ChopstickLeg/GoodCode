@@ -53,7 +53,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		Enabled:  true,
 	}
 
-	err = conn.Create(user).Error
+	err = conn.Create(&user).Error
 
 	if err != nil {
 		http.Error(w, "Failed to create user: "+err.Error(), http.StatusInternalServerError)
