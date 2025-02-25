@@ -68,7 +68,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookie := &http.Cookie{
-		Name:     "https://www.goodcode.net",
+		Name:     "auth",
 		Value:    signedToken,
 		Expires:  time.Now().Add(time.Hour * 24),
 		Secure:   true,
