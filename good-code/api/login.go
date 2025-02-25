@@ -37,8 +37,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if user.Enabled == false {
+
+	if !user.Enabled {
 		http.Error(w, "User does not exist", http.StatusUnauthorized)
+		return
 	}
 
 	incoming := []byte(req.Password)

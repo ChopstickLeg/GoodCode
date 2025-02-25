@@ -24,18 +24,18 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var count int64
+	var user db.User_login
 	err = conn.Model(&db.User_login{}).
 		Where("email = ?", req.Email).
-		Count(&count).
+		Find(&user).
 		Error
 	if err != nil {
-		http.Error(w, "Error getting existing users from db", http.StatusInternalServerError)
+		http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if count > 0 {
-		http.Error(w, "Email already exists", http.StatusUnauthorized)
+	if user.Enabled {
+		http.Error(w, "User already exists", http.StatusUnauthorized)
 		return
 	}
 
@@ -47,7 +47,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := db.User_login{
+	user = db.User_login{
 		Email:    req.Email,
 		Password: hashByte,
 		Enabled:  true,
