@@ -67,10 +67,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cookie := &http.Cookie{
+		Name:     "https://www.goodcode.net",
+		Value:    signedToken,
+		Expires:  time.Now().Add(time.Hour * 24),
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, cookie)
+
 	w.Header().Set("Content-Type", "application/json")
 	response := json.NewEncoder(w)
 
-	err = response.Encode(map[string]string{"token": signedToken})
+	err = response.Encode(map[string]bool{"success": true})
 	if err != nil {
 		http.Error(w, "Failed to send response: "+err.Error(), http.StatusInternalServerError)
 		return

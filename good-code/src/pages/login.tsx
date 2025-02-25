@@ -9,7 +9,6 @@ import { useMutation } from "@tanstack/react-query";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ const Login = () => {
       }
 
       const result = await response.json();
-      return { success: !!result.token, token: result.token };
+      return { success: result.success };
     } catch (error) {
       throw error;
     }
@@ -98,18 +97,6 @@ const Login = () => {
               />
             </div>
           </div>
-          <div className="flex items-center justify-between px-1">
-            <label className="text-gray-700 mt-1 mb-1">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="mr-2"
-              />
-              Remember Me
-            </label>
-          </div>
-
           <button
             type="submit"
             disabled={isPending}
