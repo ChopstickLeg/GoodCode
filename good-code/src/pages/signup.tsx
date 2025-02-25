@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,6 +14,7 @@ const SignUp = () => {
 
   const signupMutationFn = async (data: {
     email: string;
+    name: string;
     password: string;
   }): Promise<{ success: boolean }> => {
     try {
@@ -37,7 +39,7 @@ const SignUp = () => {
   const { mutate: signupUser, isPending } = useMutation<
     { success: boolean },
     Error,
-    { email: string; password: string }
+    { email: string; name: string; password: string }
   >({
     mutationFn: signupMutationFn,
     onSuccess: (result) => {
@@ -58,7 +60,7 @@ const SignUp = () => {
     setError("");
 
     if (password == confirmPassword) {
-      signupUser({ email, password });
+      signupUser({ email, name, password });
     } else {
       setError("Passwords do not match");
     }
@@ -81,6 +83,17 @@ const SignUp = () => {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                id="name"
+                placeholder="Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
                 required
               />
@@ -142,15 +155,15 @@ const SignUp = () => {
             )}
           </button>
           <div className="text-center text-gray-600">
-          Already have an account?{" "}
-          <button
-            type="button"
-            onClick={() => navigate("/login")}
-            className="font-semibold text-blue-500 hover:text-blue-600 w-25 h-12 ml-2"
-          >
-            Log in
-          </button>
-        </div>
+            Already have an account?{" "}
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="font-semibold text-blue-500 hover:text-blue-600 w-25 h-12 ml-2"
+            >
+              Log in
+            </button>
+          </div>
         </form>
       </div>
     </div>

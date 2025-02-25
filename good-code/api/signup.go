@@ -17,6 +17,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req struct {
 		Email    string `json:"email"`
+		Name     string `json:"name"`
 		Password string `json:"password"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -49,6 +50,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 
 	user = db.User_login{
 		Email:    req.Email,
+		Name:     req.Name,
 		Password: hashByte,
 		Enabled:  true,
 	}
