@@ -72,6 +72,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    signedToken,
 		Expires:  time.Now().Add(time.Hour * 24),
 		Secure:   true,
+		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
 	http.SetCookie(w, cookie)
