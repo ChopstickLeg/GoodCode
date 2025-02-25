@@ -70,6 +70,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	cookie := &http.Cookie{
 		Name:     "auth",
 		Value:    signedToken,
+		Path:     "/",
 		Expires:  time.Now().Add(time.Hour * 24),
 		Secure:   true,
 		HttpOnly: true,
