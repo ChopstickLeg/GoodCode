@@ -58,7 +58,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
+	claims["id"] = user.ID
 	claims["email"] = req.Email
+	claims["name"] = user.Name
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
 	signedToken, err := token.SignedString([]byte(secretKey))
