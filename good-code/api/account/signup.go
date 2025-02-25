@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/chopstickleg/good-code/api/db"
+	"github.com/chopstickleg/good-code/api/_db"
 	"golang.org/x/crypto/bcrypt"
 )
 

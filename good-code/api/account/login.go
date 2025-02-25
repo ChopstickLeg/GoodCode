@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/chopstickleg/good-code/api/db"
+	"github.com/chopstickleg/good-code/api/_db"
 	"github.com/dgrijalva/jwt-go"
 
 	"golang.org/x/crypto/bcrypt"
