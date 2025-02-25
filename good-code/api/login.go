@@ -2,7 +2,7 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -40,15 +40,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "User does not exist", http.StatusBadRequest)
 			return
 		} else {
-			http.Error(w, "Error querying DB: " + err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 
-	fmt.Print(user)
+	log.Println("User object: ", user)
 
 	incoming := []byte(req.Password)
-	
+
 	matchErr := bcrypt.CompareHashAndPassword(user.Password, incoming)
 	if matchErr != nil {
 		http.Error(w, "Invalid password", http.StatusUnauthorized)
