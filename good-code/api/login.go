@@ -2,14 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/chopstickleg/good-code/db"
 	"github.com/dgrijalva/jwt-go"
-	"gorm.io/gorm"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -36,16 +34,12 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Find(&user).
 		Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			http.Error(w, "User does not exist", http.StatusBadRequest)
-			return
-		} else {
-			http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
+		http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
+		return
 	}
-
-	log.Println("User object: ", user)
+	if user.Enabled == false {
+		http.Error(w, "User does not exist", http.StatusUnauthorized)
+	}
 
 	incoming := []byte(req.Password)
 
