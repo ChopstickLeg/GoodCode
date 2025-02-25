@@ -15,7 +15,7 @@ const Login = () => {
 
   const loginMutationFn = async (data: { email: string; password: string }) => {
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("/api/account/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

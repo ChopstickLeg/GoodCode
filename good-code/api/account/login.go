@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/chopstickleg/good-code/db"
+	"github.com/chopstickleg/good-code/api/db"
 	"github.com/dgrijalva/jwt-go"
 
 	"golang.org/x/crypto/bcrypt"
@@ -58,9 +58,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
+	claims["iss"] = "www.good-code.net"
 	claims["id"] = user.ID
 	claims["email"] = req.Email
 	claims["name"] = user.Name
+	claims["iat"] = time.Now().Unix()
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
 	signedToken, err := token.SignedString([]byte(secretKey))
