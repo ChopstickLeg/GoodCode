@@ -49,7 +49,7 @@ func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
 
 func verifyToken(tokenString string, secretKey string) error {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return secretKey, nil
+		return []byte(secretKey), nil
 	})
 
 	if err != nil {
