@@ -11,13 +11,9 @@ import Login from "./pages/login";
 import Home from "./pages/home";
 import AuthenticateUser from "./auth/VerifyJWT";
 
-const isAuthenticated = () => {
-  return AuthenticateUser;
-};
-
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
-  if (!isAuthenticated()) {
+  if (!AuthenticateUser()) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   return children;
