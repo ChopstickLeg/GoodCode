@@ -14,8 +14,10 @@ import AuthenticateUser from "./auth/VerifyJWT";
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
   if (!AuthenticateUser()) {
+    console.log(true)
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
+  console.log(false)
   return children;
 };
 
