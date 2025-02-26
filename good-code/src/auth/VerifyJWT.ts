@@ -1,18 +1,33 @@
-const AuthenticateUser = () => {
-  const getAuthCookie = () => {
-    const cookieName = "auth";
-    const decodedCookie = decodeURIComponent(document.cookie);
-    const cookieArray = decodedCookie.split(";");
-    console.log(cookieArray);
-    for (let i = 0; i < cookieArray.length; i++) {
-      let cookie = cookieArray[i].trimStart();
-      if (cookie.indexOf(cookieName) === 0) {
-        return cookie.substring(cookieName.length, cookie.length);
-      }
-    }
-    return null;
-  };
-  const cookie = getAuthCookie();
-  return cookie == null ? true : false;
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+const useAuth = () => {
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/auth/check-session", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setAuthenticated(data.loggedIn))
+      .catch(() => setAuthenticated(false));
+  }, []);
+
+  return authenticated;
 };
-export default AuthenticateUser;
+
+export const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (auth === false) {
+      navigate("/login", { state: { from: location }, replace: true });
+    }
+  }, [auth]);
+
+  if (auth === null) return null; // Show nothing while checking auth
+
+  return children;
+};
+
+export default PrivateRoute;
