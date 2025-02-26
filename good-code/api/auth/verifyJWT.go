@@ -34,7 +34,7 @@ func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Not authorized", http.StatusUnauthorized)
 			return
 		default:
-			http.Error(w, "Internal server error when verifying token", http.StatusInternalServerError)
+			http.Error(w, "Internal server error when verifying token"+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
