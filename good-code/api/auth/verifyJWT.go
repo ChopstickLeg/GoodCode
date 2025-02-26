@@ -16,8 +16,10 @@ func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, http.ErrNoCookie):
 			http.Error(w, "Not authorized", http.StatusUnauthorized)
+			return
 		default:
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			http.Error(w, "Internal server error loading cookie", http.StatusInternalServerError)
+			return
 		}
 	}
 	secretKey := os.Getenv("JWT_SECRET_KEY")
@@ -30,8 +32,10 @@ func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, fmt.Errorf("invalid token")):
 			http.Error(w, "Not authorized", http.StatusUnauthorized)
+			return
 		default:
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			http.Error(w, "Internal server error when verifying token", http.StatusInternalServerError)
+			return
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
