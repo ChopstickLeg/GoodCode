@@ -3,7 +3,7 @@ const AuthenticateUser = () => {
     const cookieName = "auth";
     const decodedCookie = decodeURIComponent(document.cookie);
     const cookieArray = decodedCookie.split(";");
-
+    console.log(cookieArray);
     for (let i = 0; i < cookieArray.length; i++) {
       let cookie = cookieArray[i].trimStart();
       if (cookie.indexOf(cookieName) === 0) {
@@ -13,7 +13,6 @@ const AuthenticateUser = () => {
     return null;
   };
   const cookie = getAuthCookie();
-  const isLoggedIn = cookie == null ? true : false;
-  return isLoggedIn;
+  return cookie == null ? true : false;
 };
 export default AuthenticateUser;
