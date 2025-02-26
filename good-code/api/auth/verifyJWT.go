@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func verifyJWTHandler(w http.ResponseWriter, r *http.Request) {
+func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := json.NewEncoder(w)
 	err := response.Encode(map[string]bool{"loggedIn": false})
