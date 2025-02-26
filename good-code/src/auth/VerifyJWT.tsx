@@ -7,16 +7,19 @@ export const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  console.log("Auth Data:", data);
+  console.log("isLoading:", isLoading);
+  console.log("isError:", isError);
+
   useEffect(() => {
     if (isError || (data && !data.loggedIn)) {
-      console.log("Login failed, returning to login screen");
+      console.log("Login failed, redirecting to login...");
       navigate("/login", { state: { from: location }, replace: true });
     }
-  }, [data, isError]);
+  }, [data, isError, navigate, location]);
 
   if (isLoading) return <div>Loading...</div>;
 
-  console.log("Login successful");
   return children;
 };
 
