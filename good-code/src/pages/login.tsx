@@ -1,40 +1,73 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
+// import SignInButton from "../auth/MSSignIn.tsx";
+// import GoogleSignInButton from "../auth/GoogleSignIn.tsx";
+// import GitHubSignInButton from "../auth/GithubSignIn.tsx";
+import { useMutation } from "@tanstack/react-query";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    setIsLoading(true);
+  const loginMutationFn = async (data: { email: string; password: string }) => {
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("/api/account/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
-      if (response.ok) {
-        navigate("/");
-      } else {
-        setError("Invalid credentials");
+
+      if (!response.ok) {
+        throw new Error(await response.text());
       }
+
+      const result = await response.json();
+      return { success: result.success };
     } catch (error) {
-      console.error(error);
-      setError("An error occurred while logging in");
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
+  };
+
+  const { mutate: loginUser, isPending } = useMutation<
+    { success: boolean },
+    Error,
+    { email: string; password: string }
+  >({
+    mutationFn: loginMutationFn,
+    onSuccess: (result) => {
+      if (result.success) {
+        console.log("Login successful");
+        navigate("/");
+      }
+    },
+
+    onError: (error) => {
+      console.error("Login failed:", error);
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Submit clicked");
+    setError("");
+
+    loginUser({ email, password });
   };
 
   return (
     <div>
+      <Helmet>
+        <title>Login</title>
+      </Helmet>
       <div className="flex items-center justify-center h-full">
         <form onSubmit={handleSubmit} className="">
           <h2 className="text-2xl font-bold text-center mb-5">Login</h2>
@@ -44,10 +77,10 @@ const Login = () => {
             <div>
               <input
                 type="email"
-                id="username"
+                id="email"
                 placeholder="Email"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500"
                 required
               />
@@ -64,24 +97,12 @@ const Login = () => {
               />
             </div>
           </div>
-          <div className="flex items-center justify-between px-1">
-            <label className="text-gray-700 mt-1 mb-1">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="mr-2"
-              />
-              Remember Me
-            </label>
-          </div>
-
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 mb-3"
+            disabled={isPending}
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 mb-3 mt-3"
           >
-            {isLoading ? (
+            {isPending ? (
               <div className="flex items-center justify-center">
                 <svg
                   className="animate-spin h-5 w-5 mr-3"
@@ -120,6 +141,16 @@ const Login = () => {
               Sign up
             </button>
           </div>
+          {/* <div className="flex justify-center items-center text-gray-600 mt-3">
+            <SignInButton />
+          </div>
+          <div className="flex justify-center items-center text-gray-600 mt-3">
+            <GoogleSignInButton />
+          </div>
+          <div className="flex justify-center items-center text-gray-600 mt-3">
+            <GitHubSignInButton />
+          </div>
+          TODO: Add login with Microsoft, Google, and GitHub if possible*/}
         </form>
       </div>
     </div>
