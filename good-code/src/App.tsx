@@ -1,38 +1,42 @@
-import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import "./App.css";
 import Signup from "./pages/signup";
 import Login from "./pages/login";
 import Home from "./pages/home";
+import AuthenticateUser from "./auth/VerifyJWT";
+
+const isAuthenticated = () => {
+  return AuthenticateUser;
+};
+
+const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+  const location = useLocation();
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return children;
+};
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <Router>
       <Routes>
         <Route
           path="/"
           element={
-            <>
-              <h1>Vite + React</h1>
-              <div className="card">
-                <button onClick={() => setCount((count) => count + 1)}>
-                  count is {count}
-                </button>
-                <p>
-                  Edit <code>src/App.tsx</code> and save to test HMR
-                </p>
-              </div>
-              <p className="read-the-docs">
-                Click on the Vite and React logos to learn more
-              </p>
-            </>
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
           }
         />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/home" element={<Home />} />
       </Routes>
     </Router>
   );
