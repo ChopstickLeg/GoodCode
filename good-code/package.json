@@ -12,7 +12,10 @@
   "dependencies": {
     "@azure/msal-browser": "^4.2.1",
     "@azure/msal-react": "^3.0.4",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@fluentui/react": "^8.122.9",
+    "@mui/material": "^7.0.2",
     "@tailwindcss/postcss": "^4.0.5",
     "@tanstack/react-query": "^5.66.3",
     "@vercel/analytics": "^1.5.0",
