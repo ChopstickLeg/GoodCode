@@ -9,7 +9,7 @@ const PrPage = () => {
   return (
     <div className="min-h-screen bg-[#242424] text-white">
       <Helmet>
-        <title>PR Page - {prID}</title>
+        <title>Pull Request {prID}</title>
       </Helmet>
 
       <div className="w-full max-w-7xl mx-auto px-6 py-6">
