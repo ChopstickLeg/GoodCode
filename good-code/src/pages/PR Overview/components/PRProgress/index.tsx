@@ -18,12 +18,11 @@ const PRProgress = ({ currentStep }: { currentStep: number }) => {
         alternativeLabel={false}
       >
         {steps.map((label, index) => {
-          // Determine the color based on the step's status
-          let labelColor = "#ffffff"; // Default to white for upcoming steps
+          let labelColor = "#ffffff"; 
           if (index < currentStep) {
-            labelColor = "#22c55e"; // Green for completed steps
+            labelColor = "#22c55e"; 
           } else if (index === currentStep) {
-            labelColor = "#facc15"; // Yellow for the current step
+            labelColor = "#facc15"; 
           }
 
           return (
@@ -32,7 +31,7 @@ const PRProgress = ({ currentStep }: { currentStep: number }) => {
                 StepIconComponent={CustomStepIcon}
                 sx={{
                   "& .MuiStepLabel-label": {
-                    color: labelColor,
+                    color: `${labelColor} !important`,
                     fontSize: "0.875rem",
                     fontFamily: "monospace",
                   },
