@@ -6,13 +6,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/chopstickleg/good-code/api/_db"
+	db "github.com/chopstickleg/good-code/api/_db"
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
 	"github.com/dgrijalva/jwt-go"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+var LoginHandler = middleware.AllowMethods("POST")(func(w http.ResponseWriter, r *http.Request) {
 	conn, err := db.GetDB()
 	if err != nil {
 		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
@@ -91,4 +92,4 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to send response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
+})

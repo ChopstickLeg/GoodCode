@@ -5,9 +5,10 @@ import (
 	"net/http"
 
 	db "github.com/chopstickleg/good-code/api/_db"
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
 )
 
-func getPRHandler(w http.ResponseWriter, r *http.Request) {
+var getPRHandler = middleware.AllowMethods("POST")(func(w http.ResponseWriter, r *http.Request) {
 	conn, err := db.GetDB()
 	if err != nil {
 		http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
@@ -20,6 +21,22 @@ func getPRHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var pr db.Pull_request
-	err = conn.Model()
+	err = conn.Model(&db.Pull_request{}).
+		Where("ID = ?", req.ID).
+		Find(pr).
+		Error
+	if err != nil {
+		http.Error(w, "Error retrieving data from db", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	response := json.NewEncoder(w)
+
+	err = response.Encode(pr)
+	if err != nil {
+		http.Error(w, "Error sending response", http.StatusInternalServerError)
+		return
+	}
 	return
-}
+})

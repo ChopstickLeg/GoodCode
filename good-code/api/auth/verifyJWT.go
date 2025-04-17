@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"os"
 
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
 	"github.com/dgrijalva/jwt-go"
 )
 
-func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
+var VerifyJWTHandler = middleware.AllowMethods("GET")(func(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("auth")
 	if err != nil {
 		switch {
@@ -45,7 +46,7 @@ func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to send response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-}
+})
 
 func verifyToken(tokenString string, secretKey string) error {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
