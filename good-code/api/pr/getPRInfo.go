@@ -8,8 +8,8 @@ import (
 	middleware "github.com/chopstickleg/good-code/api/_middleware"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	middleware.AllowMethods("POST")(func(w http.ResponseWriter, r *http.Request) {
+func GetPRHandler(w http.ResponseWriter, r *http.Request) {
+	middleware.AllowMethods(http.MethodGet)(func(w http.ResponseWriter, r *http.Request) {
 		conn, err := db.GetDB()
 		if err != nil {
 			http.Error(w, "Failed to connect to database", http.StatusInternalServerError)

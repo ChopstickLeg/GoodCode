@@ -32,7 +32,7 @@ func GetDB() (*gorm.DB, error) {
 	)
 
 	dbOnce.Do(func() {
-		dbURL := os.Getenv("DATABASE_DATABASE_URL")
+		dbURL := os.Getenv("DATABASE_URL")
 		if dbURL == "" {
 			err = errors.New("DATABASE_URL environment variable not set")
 		}

@@ -1,0 +1,31 @@
+#!/bin/sh
+
+git fetch origin
+
+while read local_ref local_sha remote_ref remote_sha; do
+    branch_name=$(echo "$remote_ref" | sed 's|refs/heads/||')
+
+    # Only run for topic/* branches
+    if echo "$branch_name" | grep -q "^topic/"; then
+        # Extract work item number (assumes it’s at the start)
+        work_item=$(echo "$branch_name" | sed -E 's|topic/([0-9]+)_.*|\1|')
+
+        # Construct expected feature branch name
+        feature_branch=$(git ls-remote --heads origin "refs/heads/feature/$work_item*" | awk '{print $2}' | sed 's|refs/heads/||' | head -n 1)
+
+	    if [ -n "$feature_branch" ]; then
+
+            # Create the diff from common ancestor
+            git diff "origin/$feature_branch...$local_sha" > diff.txt
+
+            curl -s -o /dev/null -w "%{http_code}" -X POST \
+                -H "Content-Type: multipart/form-data" \
+                -F "file=@diff.txt" \
+                "https://www.good-code.net/api/pr/addPR"
+        else
+            echo "Feature branch $feature_branch not found on origin. Skipping diff."
+        fi
+    fi
+done
+
+exit 0
