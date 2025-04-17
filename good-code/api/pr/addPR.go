@@ -8,7 +8,7 @@ import (
 	middleware "github.com/chopstickleg/good-code/api/_middleware"
 )
 
-func AddPRHandler(w *http.ResponseWriter, r http.Request) {
+func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 	middleware.AllowMethods(http.MethodPost)(func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {

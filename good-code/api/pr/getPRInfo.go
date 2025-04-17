@@ -39,6 +39,5 @@ func GetPRHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error sending response", http.StatusInternalServerError)
 			return
 		}
-		return
 	})(w, r)
 }
