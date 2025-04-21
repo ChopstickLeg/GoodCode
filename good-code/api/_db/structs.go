@@ -14,11 +14,12 @@ type Pull_request struct {
 	Source_branch string
 	Target_branch string
 	Has_comments  bool
-	Comments      Comment
+	AIComments    string
 }
-type Comment struct {
-	ID          int
-	Author_id   int
-	Author_name string
-	Text        string
+
+type AI_request struct {
+	Model  string `json:"model"`
+	Prompt string `json:"prompt"`
+	System string `json:"system"`
+	Stream bool   `json:"stream"`
 }
