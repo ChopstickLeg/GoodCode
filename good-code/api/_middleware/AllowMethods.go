@@ -16,6 +16,8 @@ func AllowMethods(allowed ...string) func(http.HandlerFunc) http.HandlerFunc {
 			if !allowedMap[r.Method] {
 				http.Error(w, fmt.Sprintf("Method %s not allowed", r.Method), http.StatusMethodNotAllowed)
 				return
+			} else {
+				fmt.Println("Allowed method:", r.Method)
 			}
 			hf(w, r)
 		}
