@@ -60,11 +60,20 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 		Backend: genai.BackendGeminiAPI,
 	})
 
+	if err != nil {
+		http.Error(w, "Unable to create AI client", http.StatusInternalServerError)
+		return
+	}
+
+	config := genai.GenerateContentConfig{
+		SystemInstruction: genai.NewContentFromText("You are a code review assistant. You will be given a diff of a pull request. Your task is to review the code and provide feedback. You should be sarcastic and condescending, but still helpful and provide useful feedback that is factually accurate to the best of your knowledge", genai.RoleModel),
+	}
+
 	result, _ := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.0-flash-lite",
 		genai.Text(string(fileBytes)),
-		nil,
+		&config,
 	)
 
 	fmt.Print(result.Text())
