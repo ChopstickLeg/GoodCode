@@ -62,7 +62,7 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 
 	result, _ := client.Models.GenerateContent(
 		ctx,
-		"gemini-2.5-flash-preview-05-20",
+		"gemini-2.0-flash-lite",
 		genai.Text(string(fileBytes)),
 		nil,
 	)
