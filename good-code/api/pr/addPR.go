@@ -60,17 +60,13 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var thinkingBudget int32 = 0
 	config := genai.GenerateContentConfig{
 		SystemInstruction: genai.NewContentFromText("You are a code review assistant. You will be given a diff of a pull request. Your task is to review the code and provide feedback. You should be sarcastic and condescending, but still helpful and provide useful feedback that is factually accurate to the best of your knowledge", genai.RoleModel),
-		ThinkingConfig: &genai.ThinkingConfig{
-			ThinkingBudget: &thinkingBudget,
-		},
 	}
 
 	result, _ := client.Models.GenerateContent(
 		ctx,
-		"gemini-2.5-flash-preview-05-20",
+		"gemini-2.0-flash-lite",
 		genai.Text(string(fileBytes)),
 		&config,
 	)
