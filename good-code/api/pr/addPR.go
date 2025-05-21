@@ -30,9 +30,6 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("AI API URL:", url)
-	fmt.Println("AI API Token:", token)
-
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, "unable to parse form", http.StatusBadRequest)
@@ -51,8 +48,6 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to read file", http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Println("File content:", string(fileBytes))
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
