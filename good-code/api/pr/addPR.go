@@ -10,6 +10,7 @@ import (
 	middleware "github.com/chopstickleg/good-code/api/_middleware"
 
 	"google.golang.org/genai"
+	"github.com/google/go-github/v72/github"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -30,24 +31,28 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseMultipartForm(10 << 20)
-	if err != nil {
-		http.Error(w, "unable to parse form", http.StatusBadRequest)
-		return
-	}
+	ghClient := github.NewClient(nil)
 
-	file, _, err := r.FormFile("diff")
-	if err != nil {
-		http.Error(w, "Unable to retrieve file", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
+	
 
-	fileBytes, err := io.ReadAll(file)
-	if err != nil {
-		http.Error(w, "Unable to read file", http.StatusInternalServerError)
-		return
-	}
+	// err := r.ParseMultipartForm(10 << 20)
+	// if err != nil {
+	// 	http.Error(w, "unable to parse form", http.StatusBadRequest)
+	// 	return
+	// }
+
+	// file, _, err := r.FormFile("diff")
+	// if err != nil {
+	// 	http.Error(w, "Unable to retrieve file", http.StatusBadRequest)
+	// 	return
+	// }
+	// defer file.Close()
+
+	// fileBytes, err := io.ReadAll(file)
+	// if err != nil {
+	// 	http.Error(w, "Unable to read file", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
