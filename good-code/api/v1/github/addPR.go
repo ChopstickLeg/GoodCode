@@ -2,15 +2,18 @@ package handler
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 
-	middleware "github.com/chopstickleg/good-code/api/_middleware"
+	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
 
-	"google.golang.org/genai"
 	"github.com/google/go-github/v72/github"
+	"google.golang.org/genai"
 )
 
 func Handler(w http.ResponseWriter, r *http.Request) {
@@ -18,22 +21,26 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddPRHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Received request to add PR")
-	url := os.Getenv("AI_API_URL")
-	if url == "" {
-		http.Error(w, "Unable to get AI API URL", http.StatusInternalServerError)
+	body := io.ReadAll(r.Body)
+	if !VerifyGitHubSignature(body, r.Header.Get("X-Hub-Signature-256")) {
+		http.Error(w, "Invalid signature", http.StatusUnauthorized)
 		return
 	}
-
+	fmt.Println("Received valid request to add PR")
 	token := os.Getenv("AI_API_TOKEN")
 	if token == "" {
 		http.Error(w, "Unable to get AI API token", http.StatusInternalServerError)
 		return
 	}
 
-	ghClient := github.NewClient(nil)
+	var requestBody github.PullRequestEvent
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		http.Error(w, "Unable to decode GitHub event", http.StatusBadRequest)
+		return
+	}
 
-	
+	// ghClient := github.NewClient(nil)
 
 	// err := r.ParseMultipartForm(10 << 20)
 	// if err != nil {
@@ -72,7 +79,7 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 	result, _ := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.0-flash-lite",
-		genai.Text(string(fileBytes)),
+		genai.Text(string("placeholder text")),
 		&config,
 	)
 
@@ -132,4 +139,12 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 	// }
 	// gormdb.AutoMigrate(&db.Pull_request{})
 	// gormdb.Create(&pr)
+}
+
+func VerifyGitHubSignature(payload []byte, signature string) bool {
+	secret := os.Getenv("GITHUB_WEBHOOK_SECRET")
+	key := hmac.New(sha256.New, []byte(secret))
+	key.Write([]byte(string(payload)))
+	computedSignature := fmt.Sprintf("sha256=%x", key.Sum(nil))
+	return hmac.Equal([]byte(signature), []byte(computedSignature))
 }

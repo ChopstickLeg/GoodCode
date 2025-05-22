@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	db "github.com/chopstickleg/good-code/api/_db"
-	middleware "github.com/chopstickleg/good-code/api/_middleware"
+	db "github.com/chopstickleg/good-code/api/v1/_db"
+	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
 )
 
 func GetPRHandler(w http.ResponseWriter, r *http.Request) {

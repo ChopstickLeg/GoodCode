@@ -18,7 +18,7 @@ const SignUp = () => {
     password: string;
   }): Promise<{ success: boolean }> => {
     try {
-      const response = await fetch("/api/account/signup", {
+      const response = await fetch("/api/v1/account/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
