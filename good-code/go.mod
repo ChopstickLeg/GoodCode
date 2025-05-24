@@ -9,7 +9,10 @@ require (
 	gorm.io/gorm v1.25.12
 )
 
-require github.com/google/go-github/v72 v72.0.0 // indirect
+require (
+	github.com/google/go-github/v72 v72.0.0
+	github.com/google/go-querystring v1.1.0 // indirect
+)
 
 require (
 	cloud.google.com/go v0.116.0 // indirect
