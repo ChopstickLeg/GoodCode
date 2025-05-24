@@ -9,57 +9,68 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"slices"
 
 	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
+	utils "github.com/chopstickleg/good-code/api/v1/_utils"
 
 	"github.com/google/go-github/v72/github"
 	"google.golang.org/genai"
 )
+
+var actions = []string{"opened", "synchronize", "reopened"}
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	middleware.AllowMethods(http.MethodPost)(AddPRHandler)(w, r)
 }
 
 func AddPRHandler(w http.ResponseWriter, r *http.Request) {
-	body := io.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Unable to read request body", http.StatusBadRequest)
+		return
+	}
 	if !VerifyGitHubSignature(body, r.Header.Get("X-Hub-Signature-256")) {
 		http.Error(w, "Invalid signature", http.StatusUnauthorized)
 		return
 	}
-	fmt.Println("Received valid request to add PR")
-	token := os.Getenv("AI_API_TOKEN")
-	if token == "" {
-		http.Error(w, "Unable to get AI API token", http.StatusInternalServerError)
-		return
-	}
 
 	var requestBody github.PullRequestEvent
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	err = json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
 		http.Error(w, "Unable to decode GitHub event", http.StatusBadRequest)
 		return
 	}
 
-	// ghClient := github.NewClient(nil)
+	if slices.Contains(actions, requestBody.GetAction()) {
+		fmt.Println("Received PR event:", requestBody.GetAction())
+	} else {
+		fmt.Println("Received non-PR event:", requestBody.GetAction())
+		return
+	}
 
-	// err := r.ParseMultipartForm(10 << 20)
-	// if err != nil {
-	// 	http.Error(w, "unable to parse form", http.StatusBadRequest)
-	// 	return
-	// }
+	githubJWT, err := utils.GetGitHubJWT()
+	if err != nil {
+		http.Error(w, "Unable to get GitHub JWT", http.StatusInternalServerError)
+		return
+	}
 
-	// file, _, err := r.FormFile("diff")
-	// if err != nil {
-	// 	http.Error(w, "Unable to retrieve file", http.StatusBadRequest)
-	// 	return
-	// }
-	// defer file.Close()
+	GHclient := github.NewClient(nil)
+	authedGHClient := GHclient.WithAuthToken(githubJWT)
+	diff, _, err := authedGHClient.PullRequests.GetRaw(context.Background(), requestBody.GetRepo().GetOwner().GetLogin(), requestBody.GetRepo().GetName(), requestBody.GetNumber(), github.RawOptions{
+		Type: github.RawType(github.Diff),
+	})
 
-	// fileBytes, err := io.ReadAll(file)
-	// if err != nil {
-	// 	http.Error(w, "Unable to read file", http.StatusInternalServerError)
-	// 	return
-	// }
+	if err != nil {
+		http.Error(w, "Unable to get PR diff", http.StatusInternalServerError)
+		return
+	}
+
+	token := os.Getenv("AI_API_TOKEN")
+	if token == "" {
+		http.Error(w, "Unable to get AI API token", http.StatusInternalServerError)
+		return
+	}
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
@@ -79,66 +90,11 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 	result, _ := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.0-flash-lite",
-		genai.Text(string("placeholder text")),
+		genai.Text(diff),
 		&config,
 	)
 
 	fmt.Print(result.Text())
-
-	// reqBody := db.AI_request{
-	// 	Prompt: string(fileBytes),
-	// 	Model:  "gemma3:12b",
-	// 	System: "You are a code review assistant. You will be given a diff of a pull request. Your task is to review the code and provide feedback. You should be sarcastic and condescending, but still helpful and provide useful feedback that is factually accurate to the best of your knowledge",
-	// 	Stream: false,
-	// }
-
-	// body, err := json.Marshal(reqBody)
-	// if err != nil {
-	// 	http.Error(w, "Unable to marshal request", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// req, err := http.NewRequest("POST", url, strings.NewReader(string(body)))
-	// if err != nil {
-	// 	http.Error(w, "Unable to send request to AI API", http.StatusInternalServerError)
-	// 	return
-	// }
-	// req.Header.Set("Authorization", "Bearer "+token)
-	// req.Header.Set("Content-Type", "application/json")
-	// client := &http.Client{}
-	// resp, err := client.Do(req)
-	// if err != nil {
-	// 	http.Error(w, "Unable to send request to AI API", http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// defer resp.Body.Close()
-
-	// w.WriteHeader(http.StatusOK)
-	// w.Header().Set("Content-Type", "text/plain")
-	// aiResponse, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	http.Error(w, "Unable to read response from AI API", http.StatusInternalServerError)
-	// 	return
-	// }
-	// w.Write(aiResponse)
-
-	// gormdb, err := db.GetDB()
-	// if err != nil {
-	// 	fmt.Println("Failed to connect to database:", err)
-	// 	return
-	// }
-	// pr := db.Pull_request{
-	// 	ID:            0,
-	// 	Author_id:     1,
-	// 	Author_name:   "temp_author",
-	// 	Source_branch: "temp_source",
-	// 	Target_branch: "temp_target",
-	// 	Has_comments:  true,
-	// 	AIComments:    result.Text(),
-	// }
-	// gormdb.AutoMigrate(&db.Pull_request{})
-	// gormdb.Create(&pr)
 }
 
 func VerifyGitHubSignature(payload []byte, signature string) bool {
