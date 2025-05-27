@@ -4,9 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"slices"
@@ -27,7 +25,7 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 		return
 	}
 
-	githubJWT, err := utils.GetGitHubJWT()
+	githubJWT, err := GetGitHubJWT()
 	if err != nil {
 		http.Error(w, "Unable to get GitHub JWT", http.StatusInternalServerError)
 		return
@@ -82,8 +80,8 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 
 	pr := db.AiRoast{
 		AiAnalysis:    result.Text(),
-		RepoId:        requestBody.GetRepo().GetID(),
-		PullRequestId: requestBody.PullRequest.GetID(),
+		RepoId:        body.GetRepo().GetID(),
+		PullRequestId: body.PullRequest.GetID(),
 	}
 
 	err = conn.Create(&pr).Error
@@ -92,7 +90,7 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 		return
 	}
 
-	_, _, err = authedGHClient.PullRequests.CreateComment(context.Background(), requestBody.GetRepo().GetOwner().GetLogin(), requestBody.GetRepo().GetName(), requestBody.GetNumber(), &github.PullRequestComment{
+	_, _, err = authedGHClient.PullRequests.CreateComment(context.Background(), body.GetRepo().GetOwner().GetLogin(), requestBody.GetRepo().GetName(), requestBody.GetNumber(), &github.PullRequestComment{
 		Body: github.Ptr(result.Text()),
 	})
 
