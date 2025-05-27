@@ -12,7 +12,6 @@ import (
 	"slices"
 
 	db "github.com/chopstickleg/good-code/api/v1/_db"
-	utils "github.com/chopstickleg/good-code/api/v1/_utils"
 
 	"github.com/google/go-github/v72/github"
 	"google.golang.org/genai"
