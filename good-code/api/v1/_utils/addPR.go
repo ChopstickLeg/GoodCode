@@ -90,7 +90,7 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 		return
 	}
 
-	_, _, err = authedGHClient.PullRequests.CreateComment(context.Background(), body.GetRepo().GetOwner().GetLogin(), requestBody.GetRepo().GetName(), requestBody.GetNumber(), &github.PullRequestComment{
+	_, _, err = authedGHClient.PullRequests.CreateComment(context.Background(), body.GetRepo().GetOwner().GetLogin(), body.GetRepo().GetName(), body.GetNumber(), &github.PullRequestComment{
 		Body: github.Ptr(result.Text()),
 	})
 
