@@ -1,4 +1,4 @@
-package handler
+package utils
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"os"
 	"slices"
 
-	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
+	db "github.com/chopstickleg/good-code/api/v1/_db"
 	utils "github.com/chopstickleg/good-code/api/v1/_utils"
 
 	"github.com/google/go-github/v72/github"
@@ -20,32 +20,11 @@ import (
 
 var actions = []string{"opened", "synchronize", "reopened"}
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	middleware.AllowMethods(http.MethodPost)(AddPRHandler)(w, r)
-}
-
-func AddPRHandler(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Unable to read request body", http.StatusBadRequest)
-		return
-	}
-	if !VerifyGitHubSignature(body, r.Header.Get("X-Hub-Signature-256")) {
-		http.Error(w, "Invalid signature", http.StatusUnauthorized)
-		return
-	}
-
-	var requestBody github.PullRequestEvent
-	err = json.NewDecoder(r.Body).Decode(&requestBody)
-	if err != nil {
-		http.Error(w, "Unable to decode GitHub event", http.StatusBadRequest)
-		return
-	}
-
-	if slices.Contains(actions, requestBody.GetAction()) {
-		fmt.Println("Received PR event:", requestBody.GetAction())
+func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
+	if slices.Contains(actions, body.GetAction()) {
+		fmt.Println("Received PR event:", body.GetAction())
 	} else {
-		fmt.Println("Received non-PR event:", requestBody.GetAction())
+		fmt.Println("Received non-PR event:", body.GetAction())
 		return
 	}
 
@@ -57,7 +36,7 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 
 	GHclient := github.NewClient(nil)
 	authedGHClient := GHclient.WithAuthToken(githubJWT)
-	diff, _, err := authedGHClient.PullRequests.GetRaw(context.Background(), requestBody.GetRepo().GetOwner().GetLogin(), requestBody.GetRepo().GetName(), requestBody.GetNumber(), github.RawOptions{
+	diff, _, err := authedGHClient.PullRequests.GetRaw(context.Background(), body.GetRepo().GetOwner().GetLogin(), body.GetRepo().GetName(), body.GetNumber(), github.RawOptions{
 		Type: github.RawType(github.Diff),
 	})
 
@@ -95,6 +74,34 @@ func AddPRHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	fmt.Print(result.Text())
+
+	conn, err := db.GetDB()
+	if err != nil {
+		http.Error(w, "Unable to connect to database", http.StatusInternalServerError)
+		return
+	}
+
+	pr := db.AiRoast{
+		AiAnalysis:    result.Text(),
+		RepoId:        requestBody.GetRepo().GetID(),
+		PullRequestId: requestBody.PullRequest.GetID(),
+	}
+
+	err = conn.Create(&pr).Error
+	if err != nil {
+		http.Error(w, "Unable to save AI analysis to database", http.StatusInternalServerError)
+		return
+	}
+
+	_, _, err = authedGHClient.PullRequests.CreateComment(context.Background(), requestBody.GetRepo().GetOwner().GetLogin(), requestBody.GetRepo().GetName(), requestBody.GetNumber(), &github.PullRequestComment{
+		Body: github.Ptr(result.Text()),
+	})
+
+	if err != nil {
+		http.Error(w, "Unable to create comment on PR", http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func VerifyGitHubSignature(payload []byte, signature string) bool {

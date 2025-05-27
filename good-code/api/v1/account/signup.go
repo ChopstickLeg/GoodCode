@@ -27,8 +27,8 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var user db.User_login
-		err = conn.Model(&db.User_login{}).
+		var user db.UserLogin
+		err = conn.Model(&db.UserLogin{}).
 			Where("email = ?", req.Email).
 			Find(&user).
 			Error
@@ -50,7 +50,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		user = db.User_login{
+		user = db.UserLogin{
 			Email:    req.Email,
 			Name:     req.Name,
 			Password: hashByte,

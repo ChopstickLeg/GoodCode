@@ -1,25 +1,25 @@
 package db
 
-type User_login struct {
+type UserLogin struct {
 	ID       int
 	Email    string
 	Password []byte
 	Name     string
 	Enabled  bool
 }
-type Pull_request struct {
+type AiRoast struct {
 	ID            int
-	Author_id     int
-	Author_name   string
-	Source_branch string
-	Target_branch string
-	Has_comments  bool
-	AIComments    string
+	AiAnalysis    string
+	RepoId        int64
+	PullRequestId int64
 }
-
-type AI_request struct {
-	Model  string `json:"model"`
-	Prompt string `json:"prompt"`
-	System string `json:"system"`
-	Stream bool   `json:"stream"`
+type PullRequest struct {
+	ID int64
+	Repository
+	Number int
+}
+type Repository struct {
+	ID    int64
+	Name  string
+	Owner string
 }

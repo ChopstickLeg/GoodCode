@@ -30,8 +30,8 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var user db.User_login
-		err = conn.Model(&db.User_login{}).
+		var user db.UserLogin
+		err = conn.Model(&db.UserLogin{}).
 			Where("email = ?", req.Email).
 			Find(&user).
 			Error

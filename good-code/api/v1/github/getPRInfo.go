@@ -21,10 +21,10 @@ func GetPRHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
-		var pr db.Pull_request
-		err = conn.Model(&db.Pull_request{}).
+		var pr db.AiRoast
+		err = conn.Model(&db.AiRoast{}).
 			Where("ID = ?", req.ID).
-			Find(pr).
+			Find(&pr).
 			Error
 		if err != nil {
 			http.Error(w, "Error retrieving data from db", http.StatusInternalServerError)
