@@ -45,5 +45,7 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 		//handle that
 	default:
 		http.Error(w, "Unsupported event type", http.StatusBadRequest)
+		return
 	}
+	w.Write([]byte("Event processed successfully"))
 }

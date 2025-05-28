@@ -19,7 +19,8 @@ type PullRequest struct {
 	Number int
 }
 type Repository struct {
-	ID    int64
-	Name  string
-	Owner string
+	ID      int64
+	Name    string
+	Owner   string
+	Enabled bool
 }
