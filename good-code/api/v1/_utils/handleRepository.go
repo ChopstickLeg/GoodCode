@@ -55,15 +55,18 @@ func handleRepositoryDeleted(conn *gorm.DB, repository *github.Repository) error
 	repoID := repository.GetID()
 
 	if err := conn.Where("repo_id = ?", repoID).Delete(&db.AiRoast{}).Error; err != nil {
-		return log.Printf("failed to delete AI roasts for repository %d: %w", repoID, err)
+		log.Printf("failed to delete AI roasts for repository %d: %w", repoID, err)
+		return err
 	}
 
 	if err := conn.Where("repository_id = ?", repoID).Delete(&db.PullRequest{}).Error; err != nil {
-		return log.Printf("failed to delete pull requests for repository %d: %w", repoID, err)
+		log.Printf("failed to delete pull requests for repository %d: %w", repoID, err)
+		return err
 	}
 
 	if err := conn.Where("id = ?", repoID).Delete(&db.Repository{}).Error; err != nil {
-		return log.Printf("failed to delete repository %d: %w", repoID, err)
+		log.Printf("failed to delete repository %d: %w", repoID, err)
+		return err
 	}
 
 	return nil
