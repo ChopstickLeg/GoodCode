@@ -106,7 +106,7 @@ func handleRepositoryCreated(conn *gorm.DB, body github.RepositoryEvent) error {
 		Name:           repository.GetName(),
 		Owner:          repository.GetOwner().GetLogin(),
 		Enabled:        true,
-		InstallationID: installationID,
+		InstallationId: installationID,
 	}
 	return conn.Create(&repo).Error
 }

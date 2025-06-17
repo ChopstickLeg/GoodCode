@@ -6,6 +6,7 @@ type UserLogin struct {
 	Password []byte
 	Name     string
 	Enabled  bool
+	GithubId int64
 }
 type AiRoast struct {
 	ID            int
@@ -22,6 +23,7 @@ type Repository struct {
 	ID             int64
 	Name           string
 	Owner          string
+	OwnerId        int64
 	Enabled        bool
-	InstallationID int64
+	InstallationId int64
 }
