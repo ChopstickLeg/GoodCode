@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"errors"
+	"fmt"
 	"os"
 	"sync"
 	"time"
@@ -52,4 +55,15 @@ func GetGitHubJWT() (string, error) {
 	cachedJWT = token
 	cachedJWTExp = exp
 	return cachedJWT, nil
+}
+
+func VerifyGitHubSignature(payload []byte, signature string) bool {
+	secret := os.Getenv("GITHUB_WEBHOOK_SECRET")
+	if secret == "" {
+		return false
+	}
+	key := hmac.New(sha256.New, []byte(secret))
+	key.Write([]byte(string(payload)))
+	computedSignature := fmt.Sprintf("sha256=%x", key.Sum(nil))
+	return hmac.Equal([]byte(signature), []byte(computedSignature))
 }

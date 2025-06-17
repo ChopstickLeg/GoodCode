@@ -7,6 +7,7 @@ import (
 
 	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
 	utils "github.com/chopstickleg/good-code/api/v1/_utils"
+	handlers "github.com/chopstickleg/good-code/api/v1/_utils/handlers"
 
 	"github.com/google/go-github/v72/github"
 )
@@ -46,7 +47,7 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	case "pull_request":
 		if prEvent, ok := eventBody.(*github.PullRequestEvent); ok {
 			log.Printf("Processing pull request event for PR #%d", prEvent.GetNumber())
-			utils.AddPRHandler(w, *prEvent)
+			handlers.HandlePullRequestEvent(w, *prEvent)
 		} else {
 			log.Printf("Failed to cast pull request event")
 			http.Error(w, "Invalid pull request event", http.StatusBadRequest)
@@ -55,7 +56,7 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	case "installation":
 		if installEvent, ok := eventBody.(*github.InstallationEvent); ok {
 			log.Printf("Processing installation event: %s", installEvent.GetAction())
-			utils.HandleInstallationEvent(w, *installEvent)
+			handlers.HandleInstallationEvent(w, *installEvent)
 		} else {
 			log.Printf("Failed to cast installation event")
 			http.Error(w, "Invalid installation event", http.StatusBadRequest)
@@ -64,7 +65,7 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	case "installation_target":
 		if itEvent, ok := eventBody.(*github.InstallationTargetEvent); ok {
 			log.Printf("Processing installation target event")
-			utils.HandleInstallationTargetEvent(w, *itEvent)
+			handlers.HandleInstallationTargetEvent(w, *itEvent)
 		} else {
 			log.Printf("Failed to cast installation target event")
 			http.Error(w, "Invalid installation target event", http.StatusBadRequest)
@@ -73,7 +74,7 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 	case "repository":
 		if repoEvent, ok := eventBody.(*github.RepositoryEvent); ok {
 			log.Printf("Processing repository event: %s", repoEvent.GetAction())
-			utils.HandleRepositoryEvent(w, *repoEvent)
+			handlers.HandleRepositoryEvent(w, *repoEvent)
 		} else {
 			log.Printf("Failed to cast repository event")
 			http.Error(w, "Invalid repository event", http.StatusBadRequest)

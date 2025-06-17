@@ -1,9 +1,7 @@
-package utils
+package handlers
 
 import (
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +9,7 @@ import (
 	"slices"
 
 	db "github.com/chopstickleg/good-code/api/v1/_db"
+	utils "github.com/chopstickleg/good-code/api/v1/_utils"
 
 	"github.com/google/go-github/v72/github"
 	"google.golang.org/genai"
@@ -18,14 +17,14 @@ import (
 
 var actions = []string{"opened", "synchronize", "reopened"}
 
-func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
+func HandlePullRequestEvent(w http.ResponseWriter, body github.PullRequestEvent) {
 	if slices.Contains(actions, body.GetAction()) {
 		log.Printf("Received PR event: %s for PR #%d in %s", body.GetAction(), body.GetNumber(), body.GetRepo().GetFullName())
 	} else {
 		log.Printf("Received non-PR event: %s", body.GetAction())
 		return
 	}
-	githubJWT, err := GetGitHubJWT()
+	githubJWT, err := utils.GetGitHubJWT()
 	if err != nil {
 		log.Printf("Failed to get GitHub JWT: %v", err)
 		http.Error(w, "Unable to get GitHub JWT", http.StatusInternalServerError)
@@ -112,15 +111,4 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 
 	log.Printf("Successfully processed PR #%d in %s", body.GetNumber(), body.GetRepo().GetFullName())
 
-}
-
-func VerifyGitHubSignature(payload []byte, signature string) bool {
-	secret := os.Getenv("GITHUB_WEBHOOK_SECRET")
-	if secret == "" {
-		return false
-	}
-	key := hmac.New(sha256.New, []byte(secret))
-	key.Write([]byte(string(payload)))
-	computedSignature := fmt.Sprintf("sha256=%x", key.Sum(nil))
-	return hmac.Equal([]byte(signature), []byte(computedSignature))
 }
