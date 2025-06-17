@@ -6,6 +6,7 @@ import (
 
 	db "github.com/chopstickleg/good-code/api/v1/_db"
 	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
+	"gorm.io/gorm"
 )
 
 func GetPRHandler(w http.ResponseWriter, r *http.Request) {
@@ -13,7 +14,9 @@ func GetPRHandler(w http.ResponseWriter, r *http.Request) {
 		conn, err := db.GetDB()
 		if err != nil {
 			http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
+			return
 		}
+
 		var req struct {
 			ID int `json:"id"`
 		}
@@ -21,12 +24,17 @@ func GetPRHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
+
 		var pr db.AiRoast
 		err = conn.Model(&db.AiRoast{}).
-			Where("ID = ?", req.ID).
-			Find(&pr).
+			Where("id = ?", req.ID).
+			First(&pr).
 			Error
 		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, "PR analysis not found", http.StatusNotFound)
+				return
+			}
 			http.Error(w, "Error retrieving data from db", http.StatusInternalServerError)
 			return
 		}

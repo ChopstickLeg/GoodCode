@@ -9,6 +9,7 @@ import (
 	db "github.com/chopstickleg/good-code/api/v1/_db"
 	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
 	"github.com/dgrijalva/jwt-go"
+	"gorm.io/gorm"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -29,19 +30,21 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
-
 		var user db.UserLogin
 		err = conn.Model(&db.UserLogin{}).
 			Where("email = ?", req.Email).
-			Find(&user).
+			First(&user).
 			Error
 		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+				return
+			}
 			http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 		if !user.Enabled {
-			http.Error(w, "User does not exist", http.StatusUnauthorized)
+			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 			return
 		}
 

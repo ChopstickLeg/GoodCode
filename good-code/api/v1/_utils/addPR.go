@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"slices"
@@ -19,14 +20,14 @@ var actions = []string{"opened", "synchronize", "reopened"}
 
 func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 	if slices.Contains(actions, body.GetAction()) {
-		fmt.Println("Received PR event:", body.GetAction())
+		log.Printf("Received PR event: %s for PR #%d in %s", body.GetAction(), body.GetNumber(), body.GetRepo().GetFullName())
 	} else {
-		fmt.Println("Received non-PR event:", body.GetAction())
+		log.Printf("Received non-PR event: %s", body.GetAction())
 		return
 	}
-
 	githubJWT, err := GetGitHubJWT()
 	if err != nil {
+		log.Printf("Failed to get GitHub JWT: %v", err)
 		http.Error(w, "Unable to get GitHub JWT", http.StatusInternalServerError)
 		return
 	}
@@ -36,8 +37,8 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 	diff, _, err := authedGHClient.PullRequests.GetRaw(context.Background(), body.GetRepo().GetOwner().GetLogin(), body.GetRepo().GetName(), body.GetNumber(), github.RawOptions{
 		Type: github.RawType(github.Diff),
 	})
-
 	if err != nil {
+		log.Printf("Failed to get PR diff for PR #%d in %s: %v", body.GetNumber(), body.GetRepo().GetFullName(), err)
 		http.Error(w, "Unable to get PR diff", http.StatusInternalServerError)
 		return
 	}
@@ -53,8 +54,8 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 		APIKey:  token,
 		Backend: genai.BackendGeminiAPI,
 	})
-
 	if err != nil {
+		log.Printf("Failed to create AI client: %v", err)
 		http.Error(w, "Unable to create AI client", http.StatusInternalServerError)
 		return
 	}
@@ -62,18 +63,27 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 	config := genai.GenerateContentConfig{
 		SystemInstruction: genai.NewContentFromText("You are a code review assistant. You will be given a diff of a pull request. Your task is to review the code and provide feedback. You should be sarcastic and condescending, but still helpful and provide useful feedback that is factually accurate to the best of your knowledge", genai.RoleModel),
 	}
-
-	result, _ := client.Models.GenerateContent(
+	result, err := client.Models.GenerateContent(
 		ctx,
 		"gemini-2.0-flash-lite",
 		genai.Text(diff),
 		&config,
-	)
+	)	if err != nil {
+		log.Printf("Failed to generate AI analysis: %v", err)
+		http.Error(w, "Unable to generate AI analysis", http.StatusInternalServerError)
+		return
+	}
+
+	if result == nil || result.Text() == "" {
+		log.Printf("AI analysis returned empty result for PR #%d", body.GetNumber())
+		http.Error(w, "AI analysis returned empty result", http.StatusInternalServerError)
+		return
+	}
 
 	fmt.Print(result.Text())
-
 	conn, err := db.GetDB()
 	if err != nil {
+		log.Printf("Failed to connect to database: %v", err)
 		http.Error(w, "Unable to connect to database", http.StatusInternalServerError)
 		return
 	}
@@ -83,9 +93,9 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 		RepoId:        body.GetRepo().GetID(),
 		PullRequestId: body.PullRequest.GetID(),
 	}
-
 	err = conn.Create(&pr).Error
 	if err != nil {
+		log.Printf("Failed to save AI analysis to database for PR #%d: %v", body.GetNumber(), err)
 		http.Error(w, "Unable to save AI analysis to database", http.StatusInternalServerError)
 		return
 	}
@@ -93,16 +103,21 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 	_, _, err = authedGHClient.PullRequests.CreateComment(context.Background(), body.GetRepo().GetOwner().GetLogin(), body.GetRepo().GetName(), body.GetNumber(), &github.PullRequestComment{
 		Body: github.Ptr(result.Text()),
 	})
-
 	if err != nil {
+		log.Printf("Failed to create comment on PR #%d in %s: %v", body.GetNumber(), body.GetRepo().GetFullName(), err)
 		http.Error(w, "Unable to create comment on PR", http.StatusInternalServerError)
 		return
 	}
+
+	log.Printf("Successfully processed PR #%d in %s", body.GetNumber(), body.GetRepo().GetFullName())
 
 }
 
 func VerifyGitHubSignature(payload []byte, signature string) bool {
 	secret := os.Getenv("GITHUB_WEBHOOK_SECRET")
+	if secret == "" {
+		return false
+	}
 	key := hmac.New(sha256.New, []byte(secret))
 	key.Write([]byte(string(payload)))
 	computedSignature := fmt.Sprintf("sha256=%x", key.Sum(nil))

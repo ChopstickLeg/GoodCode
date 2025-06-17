@@ -7,6 +7,7 @@ import (
 	db "github.com/chopstickleg/good-code/api/v1/_db"
 	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,18 +27,17 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return
 		}
-
 		var user db.UserLogin
 		err = conn.Model(&db.UserLogin{}).
 			Where("email = ?", req.Email).
-			Find(&user).
+			First(&user).
 			Error
-		if err != nil {
+		if err != nil && err != gorm.ErrRecordNotFound {
 			http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		if user.Enabled {
+		if err == nil && user.Enabled {
 			http.Error(w, "User already exists", http.StatusUnauthorized)
 			return
 		}
