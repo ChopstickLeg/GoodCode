@@ -68,7 +68,8 @@ func AddPRHandler(w http.ResponseWriter, body github.PullRequestEvent) {
 		"gemini-2.0-flash-lite",
 		genai.Text(diff),
 		&config,
-	)	if err != nil {
+	)
+	if err != nil {
 		log.Printf("Failed to generate AI analysis: %v", err)
 		http.Error(w, "Unable to generate AI analysis", http.StatusInternalServerError)
 		return
