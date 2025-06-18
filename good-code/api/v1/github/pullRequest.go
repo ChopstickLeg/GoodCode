@@ -38,26 +38,18 @@ func PullRequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var user db.UserLogin
-		err = conn.Where("id = ?", userId).First(&user).Error
-		if err != nil {
-			log.Printf("Error finding user %d: %v", userId, err)
-			http.Error(w, "User not found", http.StatusNotFound)
-			return
-		}
-
-		var aiRoasts []db.AiRoast
-		err = conn.Joins("Repository").
-			Where("Repository.owner_id = ? AND Repository.enabled = ?", user.GithubId, true).
-			Find(&aiRoasts).Error
+		err = conn.Preload("Repositories.AiRoasts", "Repositories.enabled = ?", true).
+			Where("id = ?", userId).
+			First(&user).Error
 
 		if err != nil {
-			log.Printf("Error retrieving AI roasts for user %d: %v", userId, err)
+			log.Printf("Error retrieving user and AI roasts %d: %v", userId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(aiRoasts)
+		err = json.NewEncoder(w).Encode(user)
 		if err != nil {
 			http.Error(w, "Error sending response", http.StatusInternalServerError)
 			return

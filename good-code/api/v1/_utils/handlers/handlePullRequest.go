@@ -89,9 +89,9 @@ func HandlePullRequestEvent(w http.ResponseWriter, body github.PullRequestEvent)
 	}
 
 	pr := db.AiRoast{
-		AiAnalysis:    result.Text(),
-		RepoId:        body.GetRepo().GetID(),
-		PullRequestId: body.PullRequest.GetID(),
+		Content:           result.Text(),
+		RepoId:            body.GetRepo().GetID(),
+		PullRequestNumber: body.PullRequest.GetNumber(),
 	}
 	err = conn.Create(&pr).Error
 	if err != nil {

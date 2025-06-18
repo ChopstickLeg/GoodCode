@@ -59,11 +59,6 @@ func handleRepositoryDeleted(conn *gorm.DB, repository *github.Repository) error
 		return err
 	}
 
-	if err := conn.Where("repository_id = ?", repoID).Delete(&db.PullRequest{}).Error; err != nil {
-		log.Printf("failed to delete pull requests for repository %d: %w", repoID, err)
-		return err
-	}
-
 	if err := conn.Where("id = ?", repoID).Delete(&db.Repository{}).Error; err != nil {
 		log.Printf("failed to delete repository %d: %w", repoID, err)
 		return err
@@ -94,19 +89,12 @@ func handleRepositoryRenamed(conn *gorm.DB, body github.RepositoryEvent) error {
 
 func handleRepositoryCreated(conn *gorm.DB, body github.RepositoryEvent) error {
 	repository := body.GetRepo()
-	installation := body.GetInstallation()
-
-	var installationID int64
-	if installation != nil {
-		installationID = installation.GetID()
-	}
 
 	repo := db.Repository{
-		ID:             repository.GetID(),
-		Name:           repository.GetName(),
-		Owner:          repository.GetOwner().GetLogin(),
-		Enabled:        true,
-		InstallationId: installationID,
+		ID:      repository.GetID(),
+		Name:    repository.GetName(),
+		Owner:   repository.GetOwner().GetLogin(),
+		Enabled: true,
 	}
 	return conn.Create(&repo).Error
 }
