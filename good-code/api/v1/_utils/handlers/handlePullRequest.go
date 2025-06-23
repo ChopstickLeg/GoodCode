@@ -79,7 +79,7 @@ func HandlePullRequestEvent(w http.ResponseWriter, body github.PullRequestEvent)
 		return
 	}
 
-	log.Printf(result.Text())
+	log.Println(result.Text())
 	conn, err := db.GetDB()
 	if err != nil {
 		log.Printf("Failed to connect to database: %v", err)

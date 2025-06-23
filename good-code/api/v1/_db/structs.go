@@ -5,7 +5,7 @@ type UserLogin struct {
 	Email    string `json:"email"`
 	Password []byte `json:"-"`
 	Name     string `json:"name"`
-	GithubID int64  `json:"github_id"`
+	GithubID int64  `gorm:"uniqueIndex" json:"github_id"`
 	Enabled  bool   `json:"enabled"`
 
 	// Repositories they own
@@ -21,12 +21,13 @@ type Repository struct {
 	Owner          string `json:"owner"`
 	OwnerID        int64  `json:"owner_id"`
 	InstallationID int64  `json:"installation_id"`
+	Enabled        bool   `gorm:"default:true" json:"enabled"`
 
 	// Owner relationship
 	OwnerUser UserLogin `gorm:"foreignKey:OwnerID;references:GithubID" json:"owner_user"`
 
-	// Collaborators (many-to-many)
-	Collaborators []UserLogin `gorm:"many2many:user_repository_collaborators;" json:"collaborators"`
+	// Collaborators
+	Collaborators []UserRepositoryCollaborator `gorm:"foreignKey:RepositoryID" json:"collaborators"`
 
 	// AI Roasts
 	AiRoasts []AiRoast `gorm:"foreignKey:RepoID" json:"ai_roasts"`
