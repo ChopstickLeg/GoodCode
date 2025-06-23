@@ -80,7 +80,7 @@ func HandlePullRequestEvent(w http.ResponseWriter, body github.PullRequestEvent)
 		return
 	}
 
-	fmt.Print(result.Text())
+	log.Printf(result.Text())
 	conn, err := db.GetDB()
 	if err != nil {
 		log.Printf("Failed to connect to database: %v", err)
@@ -90,7 +90,7 @@ func HandlePullRequestEvent(w http.ResponseWriter, body github.PullRequestEvent)
 
 	pr := db.AiRoast{
 		Content:           result.Text(),
-		RepoId:            body.GetRepo().GetID(),
+		RepoID:            body.GetRepo().GetID(),
 		PullRequestNumber: body.PullRequest.GetNumber(),
 	}
 	err = conn.Create(&pr).Error

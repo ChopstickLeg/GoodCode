@@ -9,20 +9,16 @@ import (
 )
 
 func HandleInstallationTargetEvent(w http.ResponseWriter, body github.InstallationTargetEvent) {
+	installation := body.GetInstallation()
 	repository := body.GetRepository()
-	if repository == nil {
-		log.Printf("Installation target event missing repository data")
-		http.Error(w, "Invalid installation target event: missing repository", http.StatusBadRequest)
+
+	if installation == nil || repository == nil || repository.GetOwner() == nil {
+		log.Printf("Installation target event missing installation, repository, or owner data")
+		http.Error(w, "Invalid installation target event: missing installation, repository, or owner", http.StatusBadRequest)
 		return
 	}
 
-	if repository.Owner == nil || repository.Owner.Login == nil {
-		log.Printf("Installation target event missing repository owner data")
-		http.Error(w, "Invalid installation target event: missing repository owner", http.StatusBadRequest)
-		return
-	}
-
-	log.Printf("Processing installation target event for repository: %s", repository.GetFullName())
+	log.Printf("Processing installation target event for installation: %d", installation.GetID())
 
 	conn, err := db.GetDB()
 	if err != nil {
@@ -32,11 +28,11 @@ func HandleInstallationTargetEvent(w http.ResponseWriter, body github.Installati
 	}
 
 	err = conn.Model(&db.Repository{}).
-		Where("id = ?", repository.GetID()).
-		Update("owner", repository.Owner.GetLogin()).Error
+		Where("installation_id = ?", installation.GetID()).
+		Update("owner", repository.GetOwner().GetLogin()).Error
 
 	if err != nil {
-		log.Printf("Failed to update repository owner for repo ID %d: %v", repository.GetID(), err)
+		log.Printf("Failed to update repository owner for installation ID %d: %v", installation.GetID(), err)
 		http.Error(w, "Failed to update repository owner", http.StatusInternalServerError)
 		return
 	}

@@ -91,10 +91,9 @@ func handleRepositoryCreated(conn *gorm.DB, body github.RepositoryEvent) error {
 	repository := body.GetRepo()
 
 	repo := db.Repository{
-		ID:      repository.GetID(),
-		Name:    repository.GetName(),
-		Owner:   repository.GetOwner().GetLogin(),
-		Enabled: true,
+		ID:    repository.GetID(),
+		Name:  repository.GetName(),
+		Owner: repository.GetOwner().GetLogin(),
 	}
 	return conn.Create(&repo).Error
 }
