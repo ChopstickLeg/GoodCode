@@ -23,15 +23,24 @@ func HandlePullRequestEvent(w http.ResponseWriter, body github.PullRequestEvent)
 		log.Printf("Received non-PR event: %s", body.GetAction())
 		return
 	}
-	githubJWT, err := utils.GetGitHubJWT()
+
+	installationID := body.GetInstallation().GetID()
+	if installationID == 0 {
+		log.Printf("ERROR: No installation ID found in PR event")
+		http.Error(w, "No installation ID found", http.StatusBadRequest)
+		return
+	}
+	log.Printf("Using installation ID: %d", installationID)
+
+	installationToken, err := utils.GetGitHubInstallationToken(installationID)
 	if err != nil {
-		log.Printf("Failed to get GitHub JWT: %v", err)
-		http.Error(w, "Unable to get GitHub JWT", http.StatusInternalServerError)
+		log.Printf("Failed to get GitHub installation token: %v", err)
+		http.Error(w, "Unable to get GitHub installation token", http.StatusInternalServerError)
 		return
 	}
 
 	GHclient := github.NewClient(nil)
-	authedGHClient := GHclient.WithAuthToken(githubJWT)
+	authedGHClient := GHclient.WithAuthToken(installationToken)
 	diff, _, err := authedGHClient.PullRequests.GetRaw(context.Background(), body.GetRepo().GetOwner().GetLogin(), body.GetRepo().GetName(), body.GetNumber(), github.RawOptions{
 		Type: github.RawType(github.Diff),
 	})

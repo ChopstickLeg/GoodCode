@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/go-github/v72/github"
 )
 
 var (
@@ -39,7 +41,6 @@ func GenerateGitHubJWT() (string, int64, error) {
 	}
 	log.Printf("GitHub App Private Key found (length: %d)", len(privateKeyPEM))
 
-	// Parse the private key
 	log.Println("Parsing private key for RS256 signing")
 	block, _ := pem.Decode([]byte(privateKeyPEM))
 	if block == nil {
@@ -152,4 +153,29 @@ func VerifyGitHubSignature(payload []byte, signature string) bool {
 	log.Printf("Signature verification result: %t", isValid)
 
 	return isValid
+}
+
+func GetGitHubInstallationToken(installationID int64) (string, error) {
+	log.Printf("Getting installation access token for installation ID: %d", installationID)
+
+	jwt, err := GetGitHubJWT()
+	if err != nil {
+		log.Printf("ERROR: Failed to get GitHub JWT: %v", err)
+		return "", fmt.Errorf("failed to get GitHub JWT: %w", err)
+	}
+
+	client := github.NewClient(nil).WithAuthToken(jwt)
+
+	installationToken, _, err := client.Apps.CreateInstallationToken(
+		context.Background(),
+		installationID,
+		&github.InstallationTokenOptions{},
+	)
+	if err != nil {
+		log.Printf("ERROR: Failed to create installation token for installation %d: %v", installationID, err)
+		return "", fmt.Errorf("failed to create installation token: %w", err)
+	}
+
+	log.Printf("Successfully obtained installation access token (expires at: %s)", installationToken.GetExpiresAt().Format(time.RFC3339))
+	return installationToken.GetToken(), nil
 }
