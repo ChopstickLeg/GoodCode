@@ -72,7 +72,7 @@ func HandlePullRequestEvent(w http.ResponseWriter, body github.PullRequestEvent)
 	}
 	result, err := client.Models.GenerateContent(
 		ctx,
-		"gemini-2.5-flash",
+		"gemini-2.5-flash-lite-preview-06-17",
 		genai.Text(diff),
 		&config,
 	)
