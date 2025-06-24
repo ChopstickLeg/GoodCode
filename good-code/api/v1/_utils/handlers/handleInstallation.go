@@ -128,7 +128,7 @@ func getRepoInfo(repoId int64, installationID int64) (string, int64, []*github.U
 	installationToken, err := utils.GetGitHubInstallationToken(installationID)
 	if err != nil {
 		log.Printf("Failed to get GitHub installation token: %v", err)
-		return "", 0, err
+		return "", 0, nil, err
 	}
 
 	GHclient := github.NewClient(nil)
@@ -136,13 +136,13 @@ func getRepoInfo(repoId int64, installationID int64) (string, int64, []*github.U
 	repo, _, err := authedGHClient.Repositories.GetByID(context.Background(), repoId)
 	if err != nil {
 		log.Printf("Failed to get repo info for repo ID %d: %v", repoId, err)
-		return "", 0, err
+		return "", 0, nil, err
 	}
 
 	collaborators, _, err := authedGHClient.Repositories.ListCollaborators(context.Background(), repo.GetOwner().GetLogin(), repo.GetName(), nil)
 	if err != nil {
 		log.Printf("Failed to list collaborators for repo %s: %v", repo.GetFullName(), err)
-		return "", 0, err
+		return "", 0, nil, err
 	}
 	return repo.GetOwner().GetLogin(), repo.GetOwner().GetID(), collaborators, nil
 }
