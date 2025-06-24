@@ -8,7 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func GetUserIDFromJWT(tokenString string) (int, error) {
+func GetUserIDFromJWT(tokenString string) (int64, error) {
 	secretKey := os.Getenv("JWT_SECRET_KEY")
 	if secretKey == "" {
 		log.Printf("Error: JWT_SECRET_KEY environment variable not set")
