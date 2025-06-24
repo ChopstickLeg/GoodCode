@@ -60,6 +60,14 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		log.Printf("Found %d collaborating repositories", len(collaboratingRepos))
+		for i, repo := range collaboratingRepos {
+			log.Printf("Repository %d: ID=%d, Name=%s, Collaborators count=%d", i, repo.ID, repo.Name, len(repo.Collaborators))
+			for j, collab := range repo.Collaborators {
+				log.Printf("  Collaborator %d: ID=%d, GithubLogin=%s, Role=%s", j, collab.ID, collab.GithubLogin, collab.Role)
+			}
+		}
+
 		user.CollaboratingRepositories = collaboratingRepos
 
 		w.Header().Set("Content-Type", "application/json")
