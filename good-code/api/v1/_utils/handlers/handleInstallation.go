@@ -90,8 +90,8 @@ func handleAppCreated(conn *gorm.DB, installation *github.Installation, repos []
 			newRepo := db.Repository{
 				ID:             repo.GetID(),
 				Name:           repo.GetName(),
-				Owner:          repo.Owner.GetLogin(),
-				OwnerID:        repo.Owner.GetID(),
+				Owner:          repo.GetOwner().GetLogin(),
+				OwnerID:        repo.GetOwner().GetID(),
 				InstallationID: installation.GetID(),
 			}
 			if err := conn.Create(&newRepo).Error; err != nil {
