@@ -49,7 +49,7 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var collaboratingRepos []db.Repository
-		err = conn.Preload("Collaborators").
+		err = conn.Debug().Preload("Collaborators").
 			Joins("JOIN user_repository_collaborators urc ON urc.repository_id = repositories.id").
 			Where("urc.user_login_id = ? AND repositories.enabled = ?", userId, true).
 			Find(&collaboratingRepos).
