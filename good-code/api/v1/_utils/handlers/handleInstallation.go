@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"net/http"
 
 	db "github.com/chopstickleg/good-code/api/v1/_db"
+	utils "github.com/chopstickleg/good-code/api/v1/_utils"
 	"github.com/google/go-github/v72/github"
 	"gorm.io/gorm"
 )
@@ -86,19 +88,61 @@ func handleAppCreated(conn *gorm.DB, installation *github.Installation, repos []
 			log.Printf("Failed to check repository %s: %v", repo.GetFullName(), err)
 			return err
 		}
+		login, ownerID, collaborators, err := getRepoInfo(repo.GetID(), installation.GetID())
+		if err != nil {
+			log.Printf("Failed to get owner info for repo %s: %v", repo.GetFullName(), err)
+			return err
+		}
 		if count == 0 {
 			newRepo := db.Repository{
 				ID:             repo.GetID(),
 				Name:           repo.GetName(),
-				Owner:          repo.GetOwner().GetLogin(),
-				OwnerID:        repo.GetOwner().GetID(),
+				Owner:          login,
+				OwnerID:        ownerID,
 				InstallationID: installation.GetID(),
 			}
 			if err := conn.Create(&newRepo).Error; err != nil {
 				log.Printf("Failed to create repository record for %s: %v", repo.GetFullName(), err)
 				return err
 			}
+			for _, collaborator := range collaborators {
+				collab := db.UserRepositoryCollaborator{
+					RepositoryID: newRepo.ID,
+					GithubUserID: collaborator.GetID(),
+					GithubLogin:  collaborator.GetLogin(),
+					Role:         "collaborator",
+				}
+				if err := conn.Create(&collab).Error; err != nil {
+					log.Printf("Failed to create collaborator record for %s in repo %s: %v", collaborator.GetLogin(), repo.GetFullName(), err)
+					return err
+				}
+			}
 		}
 	}
 	return nil
+}
+
+func getRepoInfo(repoId int64, installationID int64) (string, int64, []*github.User, error) {
+	log.Printf("Using installation ID: %d", installationID)
+
+	installationToken, err := utils.GetGitHubInstallationToken(installationID)
+	if err != nil {
+		log.Printf("Failed to get GitHub installation token: %v", err)
+		return "", 0, err
+	}
+
+	GHclient := github.NewClient(nil)
+	authedGHClient := GHclient.WithAuthToken(installationToken)
+	repo, _, err := authedGHClient.Repositories.GetByID(context.Background(), repoId)
+	if err != nil {
+		log.Printf("Failed to get repo info for repo ID %d: %v", repoId, err)
+		return "", 0, err
+	}
+
+	collaborators, _, err := authedGHClient.Repositories.ListCollaborators(context.Background(), repo.GetOwner().GetLogin(), repo.GetName(), nil)
+	if err != nil {
+		log.Printf("Failed to list collaborators for repo %s: %v", repo.GetFullName(), err)
+		return "", 0, err
+	}
+	return repo.GetOwner().GetLogin(), repo.GetOwner().GetID(), collaborators, nil
 }
