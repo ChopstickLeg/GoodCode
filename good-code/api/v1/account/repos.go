@@ -48,6 +48,8 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		log.Printf("About to query collaborating repositories for user %d", userId)
+
 		var collaboratingRepos []db.Repository
 		err = conn.Debug().Preload("Collaborators").
 			Joins("JOIN user_repository_collaborators urc ON urc.repository_id = repositories.id").
@@ -59,6 +61,8 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
 			return
 		}
+
+		log.Printf("Successfully queried collaborating repositories")
 
 		log.Printf("Found %d collaborating repositories", len(collaboratingRepos))
 		for i, repo := range collaboratingRepos {
