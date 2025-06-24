@@ -28,8 +28,9 @@ func HandleInstallationTargetEvent(w http.ResponseWriter, body github.Installati
 	}
 
 	err = conn.Model(&db.Repository{}).
-		Where("installation_id = ?", installation.GetID()).
-		Update("owner", repository.GetOwner().GetLogin()).Error
+		Where(&db.Repository{InstallationID: installation.GetID()}).
+		Updates(&db.Repository{Owner: repository.GetOwner().GetLogin()}).
+		Error
 
 	if err != nil {
 		log.Printf("Failed to update repository owner for installation ID %d: %v", installation.GetID(), err)

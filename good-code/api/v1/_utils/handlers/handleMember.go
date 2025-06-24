@@ -52,7 +52,7 @@ func HandleMemberEvent(w http.ResponseWriter, body github.MemberEvent) {
 func handleMemberAdded(conn *gorm.DB, repository *github.Repository, member *github.User, changes *github.MemberChanges) error {
 	count := int64(0)
 	err := conn.Model(&db.UserLogin{}).
-		Where("github_id = ?", member.GetID()).
+		Where(&db.UserLogin{GithubID: member.GetID()}).
 		Count(&count).
 		Error
 	if err != nil {
@@ -68,7 +68,9 @@ func handleMemberAdded(conn *gorm.DB, repository *github.Repository, member *git
 	}
 	if count > 0 {
 		var userLogin db.UserLogin
-		err = conn.Where("github_id = ?", member.GetID()).First(&userLogin).Error
+		err = conn.Where(&db.UserLogin{GithubID: member.GetID()}).
+			First(&userLogin).
+			Error
 		if err != nil {
 			return fmt.Errorf("failed to get user login ID: %v", err)
 		}
@@ -80,11 +82,13 @@ func handleMemberAdded(conn *gorm.DB, repository *github.Repository, member *git
 
 func handleMemberEdited(conn *gorm.DB, repository *github.Repository, member *github.User, changes *github.MemberChanges) error {
 	return conn.Model(&db.UserRepositoryCollaborator{}).
-		Where("repository_id = ? AND github_user_id = ?", repository.GetID(), member.GetID()).
-		Update("role", changes.Permission.GetTo()).Error
+		Where(&db.UserRepositoryCollaborator{GithubUserID: member.GetID(), RepositoryID: repository.GetID()}).
+		Updates(&db.UserRepositoryCollaborator{Role: changes.Permission.GetTo()}).
+		Error
 }
 
 func handleMemberRemoved(conn *gorm.DB, repository *github.Repository, member *github.User) error {
-	return conn.Where("repository_id = ? AND github_user_id = ?", repository.GetID(), member.GetID()).
-		Delete(&db.UserRepositoryCollaborator{}).Error
+	return conn.Where(&db.UserRepositoryCollaborator{GithubUserID: member.GetID(), RepositoryID: repository.GetID()}).
+		Delete(&db.UserRepositoryCollaborator{}).
+		Error
 }

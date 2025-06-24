@@ -39,9 +39,9 @@ func PullRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 		var user db.UserLogin
 		err = conn.Preload("OwnedRepositories.AiRoasts", "OwnedRepositories.enabled = ?", true).
-			Where("id = ?", userId).
-			First(&user).Error
-
+			Where(&db.UserLogin{ID: int64(userId)}).
+			First(&user).
+			Error
 		if err != nil {
 			log.Printf("Error retrieving user and AI roasts for owned repos %d: %v", userId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
@@ -52,7 +52,8 @@ func PullRequestHandler(w http.ResponseWriter, r *http.Request) {
 		err = conn.Preload("AiRoasts").
 			Joins("JOIN user_repository_collaborators urc ON urc.repository_id = repositories.id").
 			Where("urc.user_login_id = ? AND repositories.enabled = ?", userId, true).
-			Find(&collaboratingRepos).Error
+			Find(&collaboratingRepos).
+			Error
 		if err != nil {
 			log.Printf("Error retrieving collaborating repositories and AI roasts for user %d: %v", userId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)

@@ -29,7 +29,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		var user db.UserLogin
 		err = conn.Model(&db.UserLogin{}).
-			Where("email = ?", req.Email).
+			Where(&db.UserLogin{Email: req.Email}).
 			First(&user).
 			Error
 		if err != nil && err != gorm.ErrRecordNotFound {

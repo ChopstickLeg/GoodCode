@@ -54,12 +54,14 @@ func HandleRepositoryEvent(w http.ResponseWriter, body github.RepositoryEvent) {
 func handleRepositoryDeleted(conn *gorm.DB, repository *github.Repository) error {
 	repoID := repository.GetID()
 
-	if err := conn.Where("repo_id = ?", repoID).Delete(&db.AiRoast{}).Error; err != nil {
+	if err := conn.Where(&db.Repository{ID: repoID}).
+		Delete(&db.AiRoast{}).Error; err != nil {
 		log.Printf("failed to delete AI roasts for repository %d: %w", repoID, err)
 		return err
 	}
 
-	if err := conn.Where("id = ?", repoID).Delete(&db.Repository{}).Error; err != nil {
+	if err := conn.Where(&db.Repository{ID: repoID}).
+		Delete(&db.Repository{}).Error; err != nil {
 		log.Printf("failed to delete repository %d: %w", repoID, err)
 		return err
 	}
@@ -71,8 +73,9 @@ func handleRepositoryTransferred(conn *gorm.DB, body github.RepositoryEvent) err
 	repository := body.GetRepo()
 
 	return conn.Model(&db.Repository{}).
-		Where("id = ?", repository.GetID()).
-		Update("owner", repository.GetOwner().GetLogin()).Error
+		Where(&db.Repository{ID: repository.GetID()}).
+		Updates(&db.Repository{Owner: repository.GetOwner().GetLogin(), OwnerID: repository.GetOwner().GetID()}).
+		Error
 }
 
 func handleRepositoryRenamed(conn *gorm.DB, body github.RepositoryEvent) error {
@@ -83,8 +86,9 @@ func handleRepositoryRenamed(conn *gorm.DB, body github.RepositoryEvent) error {
 		changes.GetRepo().Name.GetFrom(), repository.GetName())
 
 	return conn.Model(&db.Repository{}).
-		Where("id = ?", repository.GetID()).
-		Update("name", repository.GetName()).Error
+		Where(&db.Repository{ID: repository.GetID()}).
+		Updates(&db.Repository{Name: repository.GetName()}).
+		Error
 }
 
 func handleRepositoryCreated(conn *gorm.DB, body github.RepositoryEvent) error {

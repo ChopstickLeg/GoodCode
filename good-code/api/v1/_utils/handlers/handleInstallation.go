@@ -52,45 +52,34 @@ func HandleInstallationEvent(w http.ResponseWriter, body github.InstallationEven
 }
 
 func handleAppUninstalled(conn *gorm.DB, installation *github.Installation) error {
-	var repoIDs []int64
 	if err := conn.Model(&db.Repository{}).
-		Where("installation_id = ?", installation.GetID()).
-		Pluck("id", &repoIDs).
+		Where(&db.Repository{InstallationID: installation.GetID()}).
+		Updates(&db.Repository{Enabled: false}).
 		Error; err != nil {
 		log.Printf("failed to fetch repository IDs for installation %d: %v", installation.GetID(), err)
 		return err
-	}
-
-	for _, repoID := range repoIDs {
-		if err := conn.Where("repo_id = ?", repoID).Delete(&db.AiRoast{}).Error; err != nil {
-			log.Printf("failed to delete AI roasts for repository %d: %w", repoID, err)
-			return err
-		}
-
-		if err := conn.Where("id = ?", repoID).Delete(&db.Repository{}).Error; err != nil {
-			log.Printf("failed to delete repository %d: %w", repoID, err)
-			return err
-		}
 	}
 	return nil
 }
 
 func handleAppSuspended(conn *gorm.DB, installation *github.Installation) error {
 	return conn.Model(&db.Repository{}).
-		Where("installation_id = ?", installation.GetID()).
-		Update("enabled", false).Error
+		Where(&db.Repository{InstallationID: installation.GetID()}).
+		Updates(db.Repository{Enabled: false}).
+		Error
 }
 
 func handleAppUnsuspended(conn *gorm.DB, installation *github.Installation) error {
 	return conn.Model(&db.Repository{}).
-		Where("installation_id = ?", installation.GetID()).
-		Update("enabled", true).Error
+		Where(db.Repository{InstallationID: installation.GetID()}).
+		Updates(&db.Repository{Enabled: true}).
+		Error
 }
 func handleAppCreated(conn *gorm.DB, installation *github.Installation, repos []*github.Repository) error {
 	for _, repo := range repos {
 		var count int64
 		err := conn.Model(&db.Repository{}).
-			Where("repo_id = ?", repo.GetID()).
+			Where(&db.Repository{ID: repo.GetID()}).
 			Count(&count).
 			Error
 		if err != nil {
