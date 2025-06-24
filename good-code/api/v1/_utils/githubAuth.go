@@ -2,7 +2,10 @@ package utils
 
 import (
 	"crypto/hmac"
+	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"log"
@@ -29,12 +32,47 @@ func GenerateGitHubJWT() (string, int64, error) {
 	}
 	log.Printf("GitHub App Client ID found: %s", clientId)
 
-	clientSecret := os.Getenv("GITHUB_APP_CLIENT_SECRET")
-	if clientSecret == "" {
-		log.Println("ERROR: GITHUB_APP_CLIENT_SECRET environment variable not set")
-		return "", 0, errors.New("GITHUB_APP_CLIENT_SECRET environment variable not set")
+	privateKeyPEM := os.Getenv("GITHUB_APP_PRIVATE_KEY")
+	if privateKeyPEM == "" {
+		log.Println("ERROR: GITHUB_APP_PRIVATE_KEY environment variable not set")
+		return "", 0, errors.New("GITHUB_APP_PRIVATE_KEY environment variable not set")
 	}
-	log.Printf("GitHub App Client Secret found (length: %d)", len(clientSecret))
+	log.Printf("GitHub App Private Key found (length: %d)", len(privateKeyPEM))
+
+	// Parse the private key
+	log.Println("Parsing private key for RS256 signing")
+	block, _ := pem.Decode([]byte(privateKeyPEM))
+	if block == nil {
+		log.Println("ERROR: Failed to parse PEM block containing the private key")
+		return "", 0, errors.New("failed to parse PEM block containing the private key")
+	}
+	log.Printf("PEM block type: %s", block.Type)
+
+	var privateKey *rsa.PrivateKey
+	var err error
+
+	if block.Type == "RSA PRIVATE KEY" {
+		privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+	} else if block.Type == "PRIVATE KEY" {
+		key, parseErr := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if parseErr != nil {
+			err = parseErr
+		} else {
+			var ok bool
+			privateKey, ok = key.(*rsa.PrivateKey)
+			if !ok {
+				err = errors.New("parsed key is not an RSA private key")
+			}
+		}
+	} else {
+		err = fmt.Errorf("unsupported private key type: %s", block.Type)
+	}
+
+	if err != nil {
+		log.Printf("ERROR: Failed to parse private key: %v", err)
+		return "", 0, fmt.Errorf("failed to parse private key: %w", err)
+	}
+	log.Println("Successfully parsed private key")
 
 	log.Println("Creating JWT token with RS256 signing method")
 	token := jwt.New(jwt.SigningMethodRS256)
@@ -51,14 +89,11 @@ func GenerateGitHubJWT() (string, int64, error) {
 
 	log.Printf("JWT claims set - iat: %d, exp: %d, iss: %s", iat, exp, clientId)
 
-	log.Println("Attempting to sign JWT with client secret")
-	log.Printf("WARNING: Using client secret as signing key for RS256 - this may be incorrect. RS256 typically requires a private key, not a client secret")
-
-	jwtToken, err := token.SignedString([]byte(clientSecret))
+	log.Println("Attempting to sign JWT with private key")
+	jwtToken, err := token.SignedString(privateKey)
 	if err != nil {
 		log.Printf("ERROR: Failed to sign JWT token: %v", err)
 		log.Printf("Error type: %T", err)
-		log.Println("NOTE: RS256 requires a private key (PEM format), not a client secret. Consider using HS256 with client secret or RS256 with private key")
 		return "", 0, fmt.Errorf("JWT signing failed: %w", err)
 	}
 
