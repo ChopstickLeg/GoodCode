@@ -38,7 +38,8 @@ func PullRequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var user db.UserLogin
-		err = conn.Preload("OwnedRepositories.AiRoasts", "OwnedRepositories.enabled = ?", true).
+		err = conn.Preload("OwnedRepositories", "enabled = ?", true).
+			Preload("OwnedRepositories.AiRoasts").
 			Where(&db.UserLogin{ID: int64(userId)}).
 			First(&user).
 			Error
