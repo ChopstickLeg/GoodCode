@@ -108,7 +108,7 @@ func HandlePullRequestEvent(w http.ResponseWriter, body github.PullRequestEvent)
 		return
 	}
 
-	_, _, err = authedGHClient.PullRequests.CreateComment(context.Background(), body.GetRepo().GetOwner().GetLogin(), body.GetRepo().GetName(), body.GetNumber(), &github.PullRequestComment{
+	_, _, err = authedGHClient.Issues.CreateComment(context.Background(), body.GetRepo().GetOwner().GetLogin(), body.GetRepo().GetName(), body.GetNumber(), &github.IssueComment{
 		Body: github.Ptr(result.Text()),
 	})
 	if err != nil {
