@@ -39,6 +39,7 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 
 		var user db.UserLogin
 		err = conn.Preload("OwnedRepositories", "enabled = ?", true).
+			Preload("OwnedReposiotories.Collaborators").
 			Where(&db.UserLogin{ID: int64(userId)}).
 			First(&user).
 			Error
@@ -47,8 +48,6 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
 			return
 		}
-
-		log.Printf("About to query collaborating repositories for user %d", userId)
 
 		var collaboratingRepos []db.Repository
 		err = conn.Debug().Preload("Collaborators").
@@ -60,16 +59,6 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error retrieving collaborating repositories and AI roasts for user %d: %v", userId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
 			return
-		}
-
-		log.Printf("Successfully queried collaborating repositories")
-
-		log.Printf("Found %d collaborating repositories", len(collaboratingRepos))
-		for i, repo := range collaboratingRepos {
-			log.Printf("Repository %d: ID=%d, Name=%s, Collaborators count=%d", i, repo.ID, repo.Name, len(repo.Collaborators))
-			for j, collab := range repo.Collaborators {
-				log.Printf("  Collaborator %d: ID=%d, GithubLogin=%s, Role=%s", j, collab.ID, collab.GithubLogin, collab.Role)
-			}
 		}
 
 		user.CollaboratingRepositories = collaboratingRepos
