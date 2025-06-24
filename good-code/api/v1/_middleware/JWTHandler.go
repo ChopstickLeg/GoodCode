@@ -33,7 +33,7 @@ func GetUserIDFromJWT(tokenString string) (int, error) {
 		return 0, fmt.Errorf("could not parse claims")
 	}
 
-	userID, ok := claims["id"].(int)
+	userID, ok := claims["id"].(int64)
 	if !ok {
 		return 0, fmt.Errorf("user ID not found in token")
 	}
