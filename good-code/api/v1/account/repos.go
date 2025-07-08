@@ -39,7 +39,7 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 
 		var user db.UserLogin
 		err = conn.Preload("OwnedRepositories", "enabled = ?", true).
-			Preload("OwnedReposiotories.Collaborators").
+			Preload("OwnedRepositories.Collaborators").
 			Where(&db.UserLogin{ID: int64(userId)}).
 			First(&user).
 			Error
