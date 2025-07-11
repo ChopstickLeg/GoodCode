@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	db "github.com/chopstickleg/good-code/api/v1/_db"
-	utils "github.com/chopstickleg/good-code/api/v1/_utils"
+	db "github.com/chopstickleg/good-code/api/_db"
+	utils "github.com/chopstickleg/good-code/api/_utils"
 	"github.com/google/go-github/v72/github"
 	"gorm.io/gorm"
 )
@@ -106,11 +106,25 @@ func handleAppCreated(conn *gorm.DB, installation *github.Installation, repos []
 				return err
 			}
 			for _, collaborator := range collaborators {
+				var userLoginID *int64
+				var userLogin db.UserLogin
+				err = conn.Where(&db.UserLogin{GithubID: collaborator.GetID()}).First(&userLogin).Error
+				if gorm.ErrRecordNotFound == err {
+					log.Printf("User login not found for collaborator %s in repo %s", collaborator.GetLogin(), repo.GetFullName())
+					userLoginID = nil
+				} else if err != nil {
+					log.Printf("Failed to find user login for collaborator %s in repo %s: %v", collaborator.GetLogin(), repo.GetFullName(), err)
+					continue
+				} else {
+					userLoginID = &userLogin.ID
+				}
+				log.Printf("Creating collaborator record for %s in repo %s", collaborator.GetLogin(), repo.GetFullName())
 				collab := db.UserRepositoryCollaborator{
 					RepositoryID: newRepo.ID,
 					GithubUserID: collaborator.GetID(),
 					GithubLogin:  collaborator.GetLogin(),
-					Role:         "collaborator",
+					Role:         collaborator.GetRoleName(),
+					UserLoginID:  userLoginID,
 				}
 				if err := conn.Create(&collab).Error; err != nil {
 					log.Printf("Failed to create collaborator record for %s in repo %s: %v", collaborator.GetLogin(), repo.GetFullName(), err)

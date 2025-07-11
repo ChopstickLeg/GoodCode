@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	db "github.com/chopstickleg/good-code/api/v1/_db"
-	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
+	db "github.com/chopstickleg/good-code/api/_db"
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
 )
 
-func PullRequestHandler(w http.ResponseWriter, r *http.Request) {
+func GetRepositoriesHandler(w http.ResponseWriter, r *http.Request) {
 	middleware.AllowMethods(http.MethodGet)(func(w http.ResponseWriter, r *http.Request) {
 		token, err := r.Cookie("auth")
 		if err != nil {
@@ -39,29 +39,39 @@ func PullRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 		var user db.UserLogin
 		err = conn.Preload("OwnedRepositories", "enabled = ?", true).
-			Preload("OwnedRepositories.AiRoasts").
 			Where(&db.UserLogin{ID: int64(userId)}).
 			First(&user).
 			Error
 		if err != nil {
-			log.Printf("Error retrieving user and AI roasts for owned repos %d: %v", userId, err)
+			log.Printf("Error retrieving user and owned repos for user %d: %v", userId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
 			return
 		}
 
 		var collaboratingRepos []db.Repository
-		err = conn.Preload("AiRoasts").
-			Joins("JOIN user_repository_collaborators urc ON urc.repository_id = repositories.id").
+		err = conn.Joins("JOIN user_repository_collaborators urc ON urc.repository_id = repositories.id").
 			Where("urc.user_login_id = ? AND repositories.enabled = ?", userId, true).
 			Find(&collaboratingRepos).
 			Error
 		if err != nil {
-			log.Printf("Error retrieving collaborating repositories and AI roasts for user %d: %v", userId, err)
+			log.Printf("Error retrieving collaborating repositories for user %d: %v", userId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
 			return
 		}
 
-		user.CollaboratingRepositories = collaboratingRepos
+		ownedRepoIDs := make(map[int64]struct{})
+		for _, repo := range user.OwnedRepositories {
+			ownedRepoIDs[repo.ID] = struct{}{}
+		}
+
+		filteredCollaboratingRepos := make([]db.Repository, 0, len(collaboratingRepos))
+		for _, repo := range collaboratingRepos {
+			if _, owned := ownedRepoIDs[repo.ID]; !owned {
+				filteredCollaboratingRepos = append(filteredCollaboratingRepos, repo)
+			}
+		}
+
+		user.CollaboratingRepositories = filteredCollaboratingRepos
 
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(user)

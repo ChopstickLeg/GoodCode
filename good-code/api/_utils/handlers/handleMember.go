@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	db "github.com/chopstickleg/good-code/api/v1/_db"
+	db "github.com/chopstickleg/good-code/api/_db"
 	"gorm.io/gorm"
 
 	"github.com/google/go-github/v72/github"

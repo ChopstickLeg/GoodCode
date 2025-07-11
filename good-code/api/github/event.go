@@ -5,9 +5,9 @@ import (
 	"log"
 	"net/http"
 
-	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
-	utils "github.com/chopstickleg/good-code/api/v1/_utils"
-	handlers "github.com/chopstickleg/good-code/api/v1/_utils/handlers"
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
+	utils "github.com/chopstickleg/good-code/api/_utils"
+	handlers "github.com/chopstickleg/good-code/api/_utils/handlers"
 
 	"github.com/google/go-github/v72/github"
 )
@@ -78,6 +78,15 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			log.Printf("Failed to cast repository event")
 			http.Error(w, "Invalid repository event", http.StatusBadRequest)
+			return
+		}
+	case "member":
+		if memberEvent, ok := eventBody.(*github.MemberEvent); ok {
+			log.Printf("Processing member event: %s for user %s", memberEvent.GetAction(), memberEvent.GetMember().GetLogin())
+			handlers.HandleMemberEvent(w, *memberEvent)
+		} else {
+			log.Printf("Failed to cast member event")
+			http.Error(w, "Invalid member event", http.StatusBadRequest)
 			return
 		}
 	default:

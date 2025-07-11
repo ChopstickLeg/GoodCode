@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	db "github.com/chopstickleg/good-code/api/v1/_db"
-	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
+	db "github.com/chopstickleg/good-code/api/_db"
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
 	"github.com/dgrijalva/jwt-go"
 	"gorm.io/gorm"
 

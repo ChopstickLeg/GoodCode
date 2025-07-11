@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"os"
 
-	db "github.com/chopstickleg/good-code/api/v1/_db"
+	db "github.com/chopstickleg/good-code/api/_db"
 )
 
 func MigrateHandler(w http.ResponseWriter, r *http.Request) {

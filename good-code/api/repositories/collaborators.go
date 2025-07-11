@@ -7,12 +7,11 @@ import (
 	"net/http"
 	"strconv"
 
-	db "github.com/chopstickleg/good-code/api/v1/_db"
-	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
-	"github.com/go-chi/chi/v5"
+	db "github.com/chopstickleg/good-code/api/_db"
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
 )
 
-func GetRoastsHandler(w http.ResponseWriter, r *http.Request) {
+func GetCollaboratorsHandler(w http.ResponseWriter, r *http.Request) {
 	middleware.AllowMethods(http.MethodGet)(func(w http.ResponseWriter, r *http.Request) {
 		token, err := r.Cookie("auth")
 		if err != nil {
@@ -33,7 +32,7 @@ func GetRoastsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		repoIdStr := chi.URLParam(r, "repoId")
+		repoIdStr := r.URL.Query().Get("repoId")
 		repoId, err := strconv.ParseInt(repoIdStr, 10, 64)
 		if err != nil {
 			http.Error(w, "Invalid repository ID", http.StatusBadRequest)
@@ -53,7 +52,15 @@ func GetRoastsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		isOwner := repo.OwnerID == int64(userId)
+		var owner db.UserLogin
+		err = conn.Where(&db.UserLogin{ID: userId}).First(&owner).Error
+		if err != nil {
+			log.Printf("Error retrieving owner with ID %d: %v", userId, err)
+			http.Error(w, "Error retrieving owner from database", http.StatusInternalServerError)
+			return
+		}
+
+		isOwner := repo.OwnerID == owner.GithubID
 
 		var isCollaborator bool
 		if !isOwner {
@@ -69,16 +76,16 @@ func GetRoastsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var roasts []db.AiRoast
-		err = conn.Where(&db.AiRoast{RepoID: repoId}).Find(&roasts).Error
+		var collaborators []db.UserRepositoryCollaborator
+		err = conn.Where(&db.UserRepositoryCollaborator{RepositoryID: repoId}).Find(&collaborators).Error
 		if err != nil {
-			log.Printf("Error retrieving AI roasts for repo %d: %v", repoId, err)
+			log.Printf("Error retrieving collaborators for repo %d: %v", repoId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(roasts)
+		err = json.NewEncoder(w).Encode(collaborators)
 		if err != nil {
 			http.Error(w, "Error sending response", http.StatusInternalServerError)
 			return

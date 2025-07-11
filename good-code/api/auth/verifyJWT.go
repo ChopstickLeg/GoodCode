@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
 	"github.com/dgrijalva/jwt-go"
 )
 
