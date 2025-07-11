@@ -5,12 +5,14 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 
 	db "github.com/chopstickleg/good-code/api/v1/_db"
 	middleware "github.com/chopstickleg/good-code/api/v1/_middleware"
+	"github.com/go-chi/chi/v5"
 )
 
-func GetReposHandler(w http.ResponseWriter, r *http.Request) {
+func GetCollaboratorsHandler(w http.ResponseWriter, r *http.Request) {
 	middleware.AllowMethods(http.MethodGet)(func(w http.ResponseWriter, r *http.Request) {
 		token, err := r.Cookie("auth")
 		if err != nil {
@@ -31,40 +33,52 @@ func GetReposHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		repoIdStr := chi.URLParam(r, "repoId")
+		repoId, err := strconv.ParseInt(repoIdStr, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid repository ID", http.StatusBadRequest)
+			return
+		}
+
 		conn, err := db.GetDB()
 		if err != nil {
 			http.Error(w, "Failed to connect to database", http.StatusInternalServerError)
 			return
 		}
 
-		var user db.UserLogin
-		err = conn.Preload("OwnedRepositories", "enabled = ?", true).
-			Preload("OwnedRepositories.Collaborators").
-			Where(&db.UserLogin{ID: int64(userId)}).
-			First(&user).
-			Error
+		var repo db.Repository
+		err = conn.Where(&db.Repository{ID: repoId}).First(&repo).Error
 		if err != nil {
-			log.Printf("Error retrieving user and AI roasts for owned repos %d: %v", userId, err)
-			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
+			http.Error(w, "Repository not found", http.StatusNotFound)
 			return
 		}
 
-		var collaboratingRepos []db.Repository
-		err = conn.Debug().Preload("Collaborators").
-			Joins("JOIN user_repository_collaborators urc ON urc.repository_id = repositories.id").
-			Where("urc.user_login_id = ? AND repositories.enabled = ?", userId, true).
-			Find(&collaboratingRepos).
-			Error
-		if err != nil {
-			log.Printf("Error retrieving collaborating repositories and AI roasts for user %d: %v", userId, err)
-			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
+		isOwner := repo.OwnerID == int64(userId)
+
+		var isCollaborator bool
+		if !isOwner {
+			var collaborator db.UserRepositoryCollaborator
+			err = conn.Where(&db.UserRepositoryCollaborator{RepositoryID: repoId, UserLoginID: &userId}).First(&collaborator).Error
+			if err == nil {
+				isCollaborator = true
+			}
+		}
+
+		if !isOwner && !isCollaborator {
+			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
 		}
 
-		user.CollaboratingRepositories = collaboratingRepos
+		var collaborators []db.UserRepositoryCollaborator
+		err = conn.Where(&db.UserRepositoryCollaborator{RepositoryID: repoId}).Find(&collaborators).Error
+		if err != nil {
+			log.Printf("Error retrieving collaborators for repo %d: %v", repoId, err)
+			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
+			return
+		}
 
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(user)
+		err = json.NewEncoder(w).Encode(collaborators)
 		if err != nil {
 			http.Error(w, "Error sending response", http.StatusInternalServerError)
 			return
