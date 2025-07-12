@@ -4,7 +4,6 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import PrivateRoute from "./utils/auth/VerifyJWT";
-import PrPage from "./pages/PR Overview";
 
 function App() {
   return (
@@ -18,14 +17,6 @@ function App() {
             <PrivateRoute>
               <Home />
             </PrivateRoute>
-          }
-        />
-        <Route
-          path="/pr/:prID"
-          element={
-            // <PrivateRoute>
-            <PrPage />
-            // </PrivateRoute>
           }
         />
       </Routes>

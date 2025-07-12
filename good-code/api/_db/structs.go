@@ -1,5 +1,7 @@
 package db
 
+import "time"
+
 type UserLogin struct {
 	ID       int64  `gorm:"primaryKey;autoIncrement" json:"id"`
 	Email    string `json:"email"`
@@ -7,6 +9,9 @@ type UserLogin struct {
 	Name     string `json:"name"`
 	GithubID int64  `gorm:"uniqueIndex" json:"github_id"`
 	Enabled  bool   `json:"enabled"`
+
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Repositories they own
 	OwnedRepositories []Repository `gorm:"foreignKey:OwnerID;references:GithubID" json:"owned_repositories"`
@@ -22,6 +27,9 @@ type Repository struct {
 	OwnerID        int64  `json:"owner_id"`
 	InstallationID int64  `json:"installation_id"`
 	Enabled        bool   `gorm:"default:true" json:"enabled"`
+
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Owner relationship
 	OwnerUser UserLogin `gorm:"foreignKey:OwnerID;references:GithubID" json:"owner_user"`
@@ -41,16 +49,21 @@ type UserRepositoryCollaborator struct {
 	GithubLogin  string `json:"github_login"`
 	Role         string `json:"role"`
 
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+
 	UserLoginID *int64     `gorm:"default:null" json:"user_login_id,omitempty"`
 	UserLogin   *UserLogin `gorm:"foreignKey:UserLoginID" json:"user_login,omitempty"`
 	Repository  Repository `gorm:"foreignKey:RepositoryID" json:"repository"`
 }
 
 type AiRoast struct {
-	ID                int64  `gorm:"primaryKey;autoIncrement" json:"id"`
-	RepoID            int64  `json:"repo_id"`
-	PullRequestNumber int    `json:"pull_request_number"`
-	Content           string `json:"content"`
+	ID                int64     `gorm:"primaryKey;autoIncrement" json:"id"`
+	RepoID            int64     `json:"repo_id"`
+	PullRequestNumber int       `json:"pull_request_number"`
+	Content           string    `json:"content"`
+	CreatedAt         time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt         time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
-	Repository Repository `gorm:"foreignKey:RepoID"`
+	Repository Repository `gorm:"foreignKey:RepoID" json:"repository"`
 }
