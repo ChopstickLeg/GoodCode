@@ -62,6 +62,7 @@ type AiRoast struct {
 	RepoID            int64     `json:"repo_id"`
 	PullRequestNumber int       `json:"pull_request_number"`
 	Content           string    `json:"content"`
+	IsOpen            bool      `json:"is_open"`
 	CreatedAt         time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
