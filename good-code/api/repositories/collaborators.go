@@ -9,6 +9,7 @@ import (
 
 	db "github.com/chopstickleg/good-code/api/_db"
 	middleware "github.com/chopstickleg/good-code/api/_middleware"
+	repository "github.com/chopstickleg/good-code/api/_utils/repository"
 )
 
 func GetCollaboratorsHandler(w http.ResponseWriter, r *http.Request) {
@@ -45,39 +46,32 @@ func GetCollaboratorsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var repo db.Repository
-		err = conn.Where(&db.Repository{ID: repoId}).First(&repo).Error
+		var user db.UserLogin
+		err = conn.Where(&db.UserLogin{ID: userId}).First(&user).Error
 		if err != nil {
-			http.Error(w, "Repository not found", http.StatusNotFound)
+			log.Printf("Error retrieving user with ID %d: %v", userId, err)
+			http.Error(w, "Error retrieving user from database", http.StatusInternalServerError)
 			return
 		}
 
-		var owner db.UserLogin
-		err = conn.Where(&db.UserLogin{ID: userId}).First(&owner).Error
+		hasAccess, err := repository.GetRepoAccess(repoId, user, conn)
 		if err != nil {
-			log.Printf("Error retrieving owner with ID %d: %v", userId, err)
-			http.Error(w, "Error retrieving owner from database", http.StatusInternalServerError)
+			log.Printf("Error checking repository access for user %d and repo %d: %v", userId, repoId, err)
+			http.Error(w, "Error checking repository access", http.StatusInternalServerError)
 			return
 		}
 
-		isOwner := repo.OwnerID == owner.GithubID
-
-		var isCollaborator bool
-		if !isOwner {
-			var collaborator db.UserRepositoryCollaborator
-			err = conn.Where(&db.UserRepositoryCollaborator{RepositoryID: repoId, UserLoginID: &userId}).First(&collaborator).Error
-			if err == nil {
-				isCollaborator = true
-			}
-		}
-
-		if !isOwner && !isCollaborator {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+		if !hasAccess {
+			http.Error(w, "Not authorized to access this repository", http.StatusForbidden)
 			return
 		}
 
 		var collaborators []db.UserRepositoryCollaborator
-		err = conn.Where(&db.UserRepositoryCollaborator{RepositoryID: repoId}).Find(&collaborators).Error
+		err = conn.
+			Omit("Repository").
+			Where(&db.UserRepositoryCollaborator{RepositoryID: repoId}).
+			Find(&collaborators).
+			Error
 		if err != nil {
 			log.Printf("Error retrieving collaborators for repo %d: %v", repoId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)

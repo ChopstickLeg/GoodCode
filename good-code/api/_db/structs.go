@@ -45,16 +45,17 @@ type UserRepositoryCollaborator struct {
 	ID           int64 `gorm:"primaryKey;autoIncrement" json:"id"`
 	RepositoryID int64 `json:"repository_id"`
 
-	GithubUserID int64  `json:"github_user_id"`
-	GithubLogin  string `json:"github_login"`
-	Role         string `json:"role"`
+	GithubUserID   int64  `json:"github_user_id"`
+	GithubLogin    string `json:"github_login"`
+	Role           string `json:"role"`
+	IsGoodCodeUser bool   `json:"is_good_code_user"`
 
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	UserLoginID *int64     `gorm:"default:null" json:"user_login_id,omitempty"`
 	UserLogin   *UserLogin `gorm:"foreignKey:UserLoginID" json:"user_login,omitempty"`
-	Repository  Repository `gorm:"foreignKey:RepositoryID" json:"repository"`
+	Repository  Repository `gorm:"foreignKey:RepositoryID" json:"-"`
 }
 
 type AiRoast struct {
@@ -66,5 +67,5 @@ type AiRoast struct {
 	CreatedAt         time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt         time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
-	Repository Repository `gorm:"foreignKey:RepoID" json:"repository"`
+	Repository Repository `gorm:"foreignKey:RepoID" json:"-"`
 }

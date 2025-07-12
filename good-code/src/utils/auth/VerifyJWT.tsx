@@ -1,15 +1,16 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "./useAuth";
+import { useAuth } from "../../hooks";
+import { LoadingSpinner } from "../../components/Common";
 
-export const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+interface PrivateRouteProps {
+  children: React.ReactNode;
+}
+
+export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const { data, isLoading, isError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
-  console.log("Auth Data:", data);
-  console.log("isLoading:", isLoading);
-  console.log("isError:", isError);
 
   useEffect(() => {
     if (isError || (data && !data.loggedIn)) {
@@ -17,9 +18,19 @@ export const PrivateRoute = ({ children }: { children: JSX.Element }) => {
     }
   }, [data, isError, navigate, location]);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <LoadingSpinner size="large" />
+      </div>
+    );
+  }
 
-  return children;
+  if (isError || !data?.loggedIn) {
+    return null;
+  }
+
+  return <>{children}</>;
 };
 
 export default PrivateRoute;

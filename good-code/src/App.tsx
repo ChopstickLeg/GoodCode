@@ -3,7 +3,10 @@ import "./App.css";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import Repositories from "./pages/Repositories";
+import RepositoryDetails from "./pages/RepositoryDetails";
 import PrivateRoute from "./utils/auth/VerifyJWT";
+import Layout from "./components/Layout";
 
 function App() {
   return (
@@ -15,7 +18,29 @@ function App() {
           path="/"
           element={
             <PrivateRoute>
-              <Home />
+              <Layout>
+                <Home />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/repositories"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Repositories />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/repositories/:repoId"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <RepositoryDetails />
+              </Layout>
             </PrivateRoute>
           }
         />

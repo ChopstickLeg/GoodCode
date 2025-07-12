@@ -9,6 +9,10 @@
       "destination": "/api/repositories/collaborators?repoId=$1"
     },
     {
+      "source": "/api/repositories/([0-9]+)",
+      "destination": "/api/repositories/repository?repoId=$1"
+    },
+    {
       "source": "/((?!api/.*).*)",
       "destination": "/"
     }

@@ -61,10 +61,11 @@ func handleMemberAdded(conn *gorm.DB, repository *github.Repository, member *git
 	}
 
 	collaborator := db.UserRepositoryCollaborator{
-		RepositoryID: repository.GetID(),
-		GithubUserID: member.GetID(),
-		GithubLogin:  member.GetLogin(),
-		Role:         changes.Permission.GetTo(),
+		RepositoryID:   repository.GetID(),
+		GithubUserID:   member.GetID(),
+		GithubLogin:    member.GetLogin(),
+		Role:           changes.Permission.GetTo(),
+		IsGoodCodeUser: count > 0,
 	}
 	if count > 0 {
 		var userLogin db.UserLogin

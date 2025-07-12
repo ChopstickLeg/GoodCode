@@ -1,10 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-
-const fetchAuthStatus = async () => {
-  const res = await fetch("/api/auth/verifyJWT", { credentials: "include" });
-  if (!res.ok) throw new Error("Failed to fetch auth status");
-  return res.json();
-};
+import { fetchAuthStatus } from "../api";
 
 export const useAuth = () => {
   return useQuery({

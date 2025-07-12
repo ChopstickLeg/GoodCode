@@ -39,6 +39,7 @@ func GetRepositoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 		var user db.UserLogin
 		err = conn.Preload("OwnedRepositories", "enabled = ?", true).
+			Preload("OwnedRepositories.AiRoasts").
 			Where(&db.UserLogin{ID: int64(userId)}).
 			First(&user).
 			Error
@@ -51,6 +52,7 @@ func GetRepositoriesHandler(w http.ResponseWriter, r *http.Request) {
 		var collaboratingRepos []db.Repository
 		err = conn.Joins("JOIN user_repository_collaborators urc ON urc.repository_id = repositories.id").
 			Where("urc.user_login_id = ? AND repositories.enabled = ?", userId, true).
+			Preload("AiRoasts").
 			Find(&collaboratingRepos).
 			Error
 		if err != nil {

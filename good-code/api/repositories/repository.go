@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 
 	db "github.com/chopstickleg/good-code/api/_db"
@@ -11,7 +10,7 @@ import (
 	repository "github.com/chopstickleg/good-code/api/_utils/repository"
 )
 
-func GetRoastsHandler(w http.ResponseWriter, r *http.Request) {
+func GetRepoHandler(w http.ResponseWriter, r *http.Request) {
 	middleware.AllowMethods(http.MethodGet)(func(w http.ResponseWriter, r *http.Request) {
 		token, err := r.Cookie("auth")
 		if err != nil {
@@ -25,16 +24,16 @@ func GetRoastsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		var user db.UserLogin
 		userId, err := middleware.GetUserIDFromJWT(token.Value)
 		if err != nil {
-			log.Printf("Error verifying JWT: %v", err)
 			http.Error(w, "Not authorized", http.StatusUnauthorized)
 			return
 		}
 
 		repoId, err := repository.GetRepoId(r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, "Invalid repository ID", http.StatusBadRequest)
 			return
 		}
 
@@ -44,43 +43,40 @@ func GetRoastsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var user db.UserLogin
 		err = conn.Where(&db.UserLogin{ID: userId}).First(&user).Error
 		if err != nil {
-			log.Printf("Error retrieving user with ID %d: %v", userId, err)
-			http.Error(w, "Error retrieving user from database", http.StatusInternalServerError)
+			http.Error(w, "User not found", http.StatusNotFound)
 			return
 		}
 
 		hasAccess, err := repository.GetRepoAccess(repoId, user, conn)
 		if err != nil {
-			log.Printf("Error checking repository access for user %d and repo %d: %v", userId, repoId, err)
 			http.Error(w, "Error checking repository access", http.StatusInternalServerError)
 			return
 		}
-
 		if !hasAccess {
-			http.Error(w, "Not authorized to access this repository", http.StatusForbidden)
+			http.Error(w, "Not authorized to access this repository", http.StatusUnauthorized)
 			return
 		}
 
-		var roasts []db.AiRoast
+		var repo db.Repository
 		err = conn.
-			Omit("Repository").
-			Where(&db.AiRoast{RepoID: repoId}).
-			Find(&roasts).
+			Preload("OwnerUser").
+			Preload("Collaborators").
+			Preload("AiRoasts").
+			Where(&db.Repository{ID: repoId}).
+			First(&repo).
 			Error
 		if err != nil {
-			log.Printf("Error retrieving AI roasts for repo %d: %v", repoId, err)
-			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
+			http.Error(w, "Repository not found", http.StatusNotFound)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(roasts)
-		if err != nil {
-			http.Error(w, "Error sending response", http.StatusInternalServerError)
+		if err := json.NewEncoder(w).Encode(repo); err != nil {
+			http.Error(w, "Failed to encode response: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+
 	})(w, r)
 }

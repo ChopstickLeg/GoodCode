@@ -120,11 +120,12 @@ func handleAppCreated(conn *gorm.DB, installation *github.Installation, repos []
 				}
 				log.Printf("Creating collaborator record for %s in repo %s", collaborator.GetLogin(), repo.GetFullName())
 				collab := db.UserRepositoryCollaborator{
-					RepositoryID: newRepo.ID,
-					GithubUserID: collaborator.GetID(),
-					GithubLogin:  collaborator.GetLogin(),
-					Role:         collaborator.GetRoleName(),
-					UserLoginID:  userLoginID,
+					RepositoryID:   newRepo.ID,
+					GithubUserID:   collaborator.GetID(),
+					GithubLogin:    collaborator.GetLogin(),
+					Role:           collaborator.GetRoleName(),
+					UserLoginID:    userLoginID,
+					IsGoodCodeUser: userLoginID != nil,
 				}
 				if err := conn.Create(&collab).Error; err != nil {
 					log.Printf("Failed to create collaborator record for %s in repo %s: %v", collaborator.GetLogin(), repo.GetFullName(), err)
