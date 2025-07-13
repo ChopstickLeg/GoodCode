@@ -52,19 +52,19 @@ const RepositoryDetails: React.FC = () => {
 
       <div className="container mx-auto px-4 py-8">
         <header className="mb-12">
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-amber-600 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-amber-600 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent">
                   {repo.name}
                 </h1>
-                <p className="text-gray-600 mb-4 text-lg">
+                <p className="text-gray-600 dark:text-gray-400 mb-4 text-lg">
                   Owned by{" "}
-                  <span className="font-semibold text-blue-600">
+                  <span className="font-semibold text-blue-600 dark:text-blue-400">
                     {repo.owner}
                   </span>
                 </p>
-                <div className="flex items-center space-x-6 text-sm text-gray-500">
+                <div className="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex items-center space-x-1">
                     <svg
                       className="w-4 h-4"
@@ -114,7 +114,7 @@ const RepositoryDetails: React.FC = () => {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-white"
@@ -136,7 +136,7 @@ const RepositoryDetails: React.FC = () => {
             <p className="text-gray-600 font-medium">Collaborators</p>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
             <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-white"
@@ -158,7 +158,7 @@ const RepositoryDetails: React.FC = () => {
             <p className="text-gray-600 font-medium">Total Roasts</p>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
             <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-white"
@@ -182,7 +182,7 @@ const RepositoryDetails: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200">
             <h2 className="text-2xl font-bold mb-6 text-gray-900">
               Collaborators
             </h2>
@@ -238,7 +238,7 @@ const RepositoryDetails: React.FC = () => {
             )}
           </div>
 
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200">
             <RoastList roasts={roasts} title="AI Roasts" />
           </div>
         </div>

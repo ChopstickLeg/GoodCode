@@ -18,7 +18,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <div className={`flex justify-center items-center ${className}`}>
       <svg
-        className={`animate-spin ${sizeClasses[size]} text-blue-600`}
+        className={`animate-spin ${sizeClasses[size]} text-blue-600 dark:text-blue-400`}
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -55,12 +55,12 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
 }) => {
   return (
     <div
-      className={`bg-red-50 border border-red-200 rounded-xl p-6 ${className}`}
+      className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-6 ${className}`}
     >
       <div className="flex items-start space-x-3">
         <div className="flex-shrink-0">
           <svg
-            className="w-5 h-5 text-red-600"
+            className="w-5 h-5 text-red-600 dark:text-red-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -74,12 +74,14 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
           </svg>
         </div>
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-red-800 mb-1">Error</h3>
-          <p className="text-sm text-red-700">{message}</p>
+          <h3 className="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">
+            Error
+          </h3>
+          <p className="text-sm text-red-700 dark:text-red-300">{message}</p>
           {onRetry && (
             <button
               onClick={onRetry}
-              className="mt-3 inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors duration-200"
+              className="mt-3 inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white font-medium rounded-lg transition-colors duration-200"
             >
               Try Again
             </button>
@@ -108,11 +110,17 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div className={`text-center p-12 ${className}`}>
       {icon && (
-        <div className="flex justify-center mb-6 text-gray-400">{icon}</div>
+        <div className="flex justify-center mb-6 text-gray-400 dark:text-gray-500">
+          {icon}
+        </div>
       )}
-      <h3 className="text-xl font-semibold text-gray-900 mb-3">{title}</h3>
+      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+        {title}
+      </h3>
       {description && (
-        <p className="text-gray-600 mb-6 max-w-md mx-auto">{description}</p>
+        <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+          {description}
+        </p>
       )}
       {action && <div>{action}</div>}
     </div>

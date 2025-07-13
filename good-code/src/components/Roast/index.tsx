@@ -36,7 +36,7 @@ export const RoastCard: React.FC<RoastCardProps> = ({
   if (!data) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">No data available</p>
+        <p className="text-gray-500 dark:text-gray-400">No data available</p>
       </div>
     );
   }
@@ -45,24 +45,26 @@ export const RoastCard: React.FC<RoastCardProps> = ({
 
   return (
     <div
-      className={`p-6 bg-white rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300 ${className}`}
+      className={`p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 ${className}`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <div className="flex items-center space-x-2 mb-3">
             <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-            <p className="text-sm text-gray-600 font-medium">
+            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
               Pull Request #{roast.pull_request_number} in{" "}
-              <span className="font-bold text-blue-600">{repository.name}</span>
+              <span className="font-bold text-blue-600 dark:text-blue-400">
+                {repository.name}
+              </span>
             </p>
           </div>
-          <p className="text-gray-900 text-sm leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-100">
+          <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
             {truncateText(roast.content, 150)}
           </p>
         </div>
       </div>
       <div className="flex items-center justify-between mt-4">
-        <span className="text-xs text-gray-500 flex items-center space-x-1">
+        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1">
           <svg
             className="w-3 h-3"
             fill="none"
@@ -79,7 +81,7 @@ export const RoastCard: React.FC<RoastCardProps> = ({
           <span>{formatRelativeTime(roast.created_at)}</span>
         </span>
         <div className="flex items-center space-x-2">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">
             PR #{roast.pull_request_number}
           </span>
         </div>
@@ -106,11 +108,13 @@ export const RoastList: React.FC<RoastListProps> = ({
   if (roasts == null || roasts.length === 0) {
     return (
       <div className={className}>
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">{title}</h2>
+        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+          {title}
+        </h2>
         <div className="text-center py-12">
-          <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
             <svg
-              className="w-12 h-12 text-gray-400"
+              className="w-12 h-12 text-gray-400 dark:text-gray-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

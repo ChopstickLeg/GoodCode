@@ -61,17 +61,17 @@ const Home: React.FC = () => {
 
       <div className="container mx-auto px-4 py-8">
         <header className="mb-12 text-center">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-amber-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-amber-600 to-blue-600 dark:from-blue-400 dark:via-amber-400 dark:to-blue-400 bg-clip-text text-transparent">
             Dashboard
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Welcome back! Here's what's happening with your repositories and
             recent AI insights.
           </p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg border border-gray-200 dark:border-gray-700 card-hover">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-white"
@@ -87,13 +87,15 @@ const Home: React.FC = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-3xl font-bold text-blue-600 mb-2">
+            <h3 className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
               {validOwnedRepos.length}
             </h3>
-            <p className="text-gray-600 font-medium">Owned Repositories</p>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
+              Owned Repositories
+            </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
             <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-white"
@@ -109,15 +111,15 @@ const Home: React.FC = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-3xl font-bold text-green-600 mb-2">
+            <h3 className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
               {validCollaboratingRepos.length}
             </h3>
-            <p className="text-gray-600 font-medium">
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
               Collaborating Repositories
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg border border-gray-200 dark:border-gray-700 card-hover">
             <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-8 h-8 text-white"
@@ -133,15 +135,17 @@ const Home: React.FC = () => {
                 />
               </svg>
             </div>
-            <h3 className="text-3xl font-bold text-amber-600 mb-2">
+            <h3 className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-2">
               {recentRoasts.length}
             </h3>
-            <p className="text-gray-600 font-medium">Recent Roasts</p>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
+              Recent Roasts
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
             <RepositoryList
               repositories={validOwnedRepos}
               title="Your Repositories"
@@ -151,13 +155,13 @@ const Home: React.FC = () => {
             />
           </div>
 
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
             <RoastList roasts={recentRoasts} title="Recent Roasts" limit={5} />
           </div>
         </div>
 
         {validCollaboratingRepos.length > 0 && (
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
             <RepositoryList
               repositories={validCollaboratingRepos}
               title="Collaborating Repositories"
