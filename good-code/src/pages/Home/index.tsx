@@ -8,6 +8,7 @@ import {
 import { LoadingSpinner, ErrorMessage } from "../../components/Common";
 import { RepositoryList } from "../../components/Repository";
 import { RoastList } from "../../components/Roast";
+import GitHubAppInstall from "../../components/GitHubAppInstall";
 
 const Home: React.FC = () => {
   const { data, error, isLoading, refetch } = useDashboardData();
@@ -48,6 +49,14 @@ const Home: React.FC = () => {
     validCollaboratingRepos,
     5
   );
+
+  if (data.github_id === null) {
+    return (
+      <div className="max-w-md mx-auto mt-8">
+        <GitHubAppInstall />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

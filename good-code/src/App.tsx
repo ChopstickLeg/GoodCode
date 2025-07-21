@@ -48,11 +48,13 @@ function App() {
         <Route
           path="/github/install"
           element={
-            <Layout>
-              <GitHubInstall>
-                <Home />
-              </GitHubInstall>
-            </Layout>
+            <PrivateRoute>
+              <Layout>
+                <GitHubInstall>
+                  <Home />
+                </GitHubInstall>
+              </Layout>
+            </PrivateRoute>
           }
         />
       </Routes>

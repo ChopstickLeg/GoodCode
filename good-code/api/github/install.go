@@ -14,7 +14,7 @@ import (
 )
 
 func HandleInstallationEvent(w http.ResponseWriter, r *http.Request) {
-	middleware.AllowMethods("GET")(func(w http.ResponseWriter, r *http.Request) {
+	middleware.AllowMethods("POST")(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("auth")
 		if err != nil {
 			switch {
@@ -42,7 +42,7 @@ func HandleInstallationEvent(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if body.SetupAction != "created" {
+		if body.SetupAction != "install" {
 			http.Error(w, "Unsupported action in installation event", http.StatusBadRequest)
 			log.Printf("Unsupported action in installation event: %s", body.SetupAction)
 			return
