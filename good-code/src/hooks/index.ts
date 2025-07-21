@@ -6,6 +6,7 @@ import {
   loginUser,
   signupUser,
   fetchRepositories,
+  postGitHubAppInstall,
 } from "../utils/api";
 import {
   UserLogin,
@@ -15,6 +16,8 @@ import {
   SignupRequest,
   LoginResponse,
   SignupResponse,
+  GitHubAppSetup,
+  GitHubAppInstallResponse,
 } from "../types";
 
 export const useDashboardData = () => {
@@ -99,6 +102,26 @@ export const useLogout = () => {
     onSuccess: () => {
       queryClient.clear();
       navigate("/login");
+    },
+  });
+};
+
+export const useGitHubAppInstall = (githubAppSetup: GitHubAppSetup) => {
+  return useMutation<GitHubAppInstallResponse, Error, GitHubAppSetup>({
+    mutationFn: () => {
+      if (!githubAppSetup.installation_id) {
+        throw new Error(
+          "Installation ID is required for GitHub App installation"
+        );
+      }
+      return postGitHubAppInstall(githubAppSetup);
+    },
+    onSuccess: (response) => {
+      if (response.success) {
+      }
+    },
+    onError: (error) => {
+      console.error("Error installing GitHub App:", error);
     },
   });
 };

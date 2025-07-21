@@ -89,6 +89,15 @@ func GitHubWebhookHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Invalid member event", http.StatusBadRequest)
 			return
 		}
+	case "installation_repositories":
+		if installRepoEvent, ok := eventBody.(*github.InstallationRepositoriesEvent); ok {
+			log.Printf("Processing installation repositories event: %s", installRepoEvent.GetAction())
+			handlers.HandleRepositoryInstallationEvent(w, *installRepoEvent)
+		} else {
+			log.Printf("Failed to cast installation repositories event")
+			http.Error(w, "Invalid installation repositories event", http.StatusBadRequest)
+			return
+		}
 	default:
 		log.Printf("Unsupported event type: %s", eventType)
 		http.Error(w, "Unsupported event type", http.StatusBadRequest)

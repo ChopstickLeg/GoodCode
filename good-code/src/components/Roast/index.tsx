@@ -127,7 +127,9 @@ export const RoastList: React.FC<RoastListProps> = ({
               />
             </svg>
           </div>
-          <p className="text-gray-600 text-lg">No roasts found.</p>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
+            No roasts found.
+          </p>
         </div>
       </div>
     );
@@ -136,7 +138,9 @@ export const RoastList: React.FC<RoastListProps> = ({
   return (
     <div className={className}>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          {title}
+        </h2>
         {limit && roasts.length > limit && (
           <span className="text-blue-600 text-sm font-medium">
             Showing {limit} of {roasts.length} roasts

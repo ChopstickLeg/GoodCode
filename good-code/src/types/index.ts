@@ -39,7 +39,8 @@ export interface UserRepositoryCollaborator {
   github_login: string;
   role: string;
   is_good_code_user: boolean;
-  UserLoginID?: bigint;
+  user_login_id?: bigint;
+  github_avatar_url?: string;
 }
 
 export interface RepositoryDetails {
@@ -69,6 +70,16 @@ export interface LoginResponse {
 }
 
 export interface SignupResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface GitHubAppSetup {
+  installation_id: string;
+  setup_action: string;
+}
+
+export interface GitHubAppInstallResponse {
   success: boolean;
   message?: string;
 }

@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 
 	middleware "github.com/chopstickleg/good-code/api/_middleware"
-	"github.com/dgrijalva/jwt-go"
+	authentication "github.com/chopstickleg/good-code/api/_utils/authentication"
 )
 
 func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,19 +23,14 @@ func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		secretKey := os.Getenv("JWT_SECRET_KEY")
-		if secretKey == "" {
-			http.Error(w, "JWT_SECRET_KEY environment variable not set", http.StatusInternalServerError)
-			return
-		}
-		err = verifyToken(cookie.Value, secretKey)
+		err = authentication.VerifyToken(cookie.Value)
 		if err != nil {
 			switch {
 			case errors.Is(err, fmt.Errorf("invalid token")):
 				http.Error(w, "Not authorized", http.StatusUnauthorized)
 				return
 			default:
-				http.Error(w, "Internal server error when verifying token"+err.Error(), http.StatusInternalServerError)
+				http.Error(w, "Internal server error when verifying token: "+err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
@@ -48,20 +42,4 @@ func VerifyJWTHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	})(w, r)
-}
-
-func verifyToken(tokenString string, secretKey string) error {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secretKey), nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	if !token.Valid {
-		return fmt.Errorf("invalid token")
-	}
-
-	return nil
 }

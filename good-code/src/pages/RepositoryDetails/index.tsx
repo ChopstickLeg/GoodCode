@@ -48,6 +48,7 @@ const RepositoryDetails: React.FC = () => {
           name="description"
           content={`Repository details for ${repo.name}`}
         />
+        <link rel="icon" type="image/svg+xml" href="./GoodCode Logo.svg" />
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">
@@ -126,14 +127,16 @@ const RepositoryDetails: React.FC = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                  d="M18 19V18C18 15.7909 16.2091 14 14 14H10C7.79086 14 6 15.7909 6 18V19M23 19V18C23 15.7909 21.2091 14 19 14H18.5M1 19V18C1 15.7909 2.79086 14 5 14H5.5M17 11C18.6569 11 20 9.65685 20 8C20 6.34315 18.6569 5 17 5M7 11C5.34315 11 4 9.65685 4 8C4 6.34315 5.34315 5 7 5M15 8C15 9.65685 13.6569 11 12 11C10.3431 11 9 9.65685 9 8C9 6.34315 10.3431 5 12 5C13.6569 5 15 6.34315 15 8Z"
                 />
               </svg>
             </div>
             <h3 className="text-3xl font-bold text-blue-600 mb-2">
               {collaborators.length}
             </h3>
-            <p className="text-gray-600 font-medium">Collaborators</p>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
+              Collaborators
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
@@ -148,14 +151,16 @@ const RepositoryDetails: React.FC = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"
                 />
               </svg>
             </div>
             <h3 className="text-3xl font-bold text-amber-600 mb-2">
               {roasts.length}
             </h3>
-            <p className="text-gray-600 font-medium">Total Roasts</p>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
+              Total Roasts
+            </p>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-lg border border-gray-200 card-hover">
@@ -170,25 +175,27 @@ const RepositoryDetails: React.FC = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                  d="M12 7V12H15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
                 />
               </svg>
             </div>
             <h3 className="text-3xl font-bold text-green-600 mb-2">
               {recentRoasts.length}
             </h3>
-            <p className="text-gray-600 font-medium">Recent Roasts</p>
+            <p className="text-gray-600 dark:text-gray-400 font-medium">
+              Recent Roasts
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200">
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
               Collaborators
             </h2>
             {collaborators.length === 0 ? (
               <div className="text-center py-12">
-                <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                   <svg
                     className="w-12 h-12 text-gray-400"
                     fill="none"
@@ -211,18 +218,26 @@ const RepositoryDetails: React.FC = () => {
                   (collaborator: UserRepositoryCollaborator) => (
                     <div
                       key={collaborator.id}
-                      className="flex items-center p-4 bg-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200"
+                      className="flex items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200"
                     >
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mr-4">
-                        <span className="text-white font-bold text-lg">
-                          {collaborator.github_login.charAt(0).toUpperCase()}
-                        </span>
+                        {collaborator.github_avatar_url ? (
+                          <img
+                            src={collaborator.github_avatar_url}
+                            alt={collaborator.github_login}
+                            className="w-10 h-10 rounded-full"
+                          />
+                        ) : (
+                          <span className="text-white text-xl font-bold">
+                            {collaborator.github_login?.charAt(0).toUpperCase()}
+                          </span>
+                        )}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-gray-900 text-lg">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
                           {collaborator.github_login}
                         </p>
-                        <p className="text-sm text-gray-600 capitalize">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">
                           {collaborator.role}
                         </p>
                       </div>

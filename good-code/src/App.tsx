@@ -7,6 +7,7 @@ import Repositories from "./pages/Repositories";
 import RepositoryDetails from "./pages/RepositoryDetails";
 import PrivateRoute from "./utils/auth/VerifyJWT";
 import Layout from "./components/Layout";
+import GitHubInstall from "./pages/GitHubInstall";
 
 function App() {
   return (
@@ -42,6 +43,16 @@ function App() {
                 <RepositoryDetails />
               </Layout>
             </PrivateRoute>
+          }
+        />
+        <Route
+          path="/github/install"
+          element={
+            <Layout>
+              <GitHubInstall>
+                <Home />
+              </GitHubInstall>
+            </Layout>
           }
         />
       </Routes>

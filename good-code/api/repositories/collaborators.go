@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log"
@@ -9,7 +10,9 @@ import (
 
 	db "github.com/chopstickleg/good-code/api/_db"
 	middleware "github.com/chopstickleg/good-code/api/_middleware"
+	utils "github.com/chopstickleg/good-code/api/_utils"
 	repository "github.com/chopstickleg/good-code/api/_utils/repository"
+	"github.com/google/go-github/v72/github"
 )
 
 func GetCollaboratorsHandler(w http.ResponseWriter, r *http.Request) {
@@ -76,6 +79,41 @@ func GetCollaboratorsHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error retrieving collaborators for repo %d: %v", repoId, err)
 			http.Error(w, "Error retrieving data from database", http.StatusInternalServerError)
 			return
+		}
+
+		var installationId int64
+		err = conn.Model(&db.Repository{}).
+			Where(&db.Repository{ID: repoId}).
+			Select("installation_id").
+			Scan(&installationId).
+			Error
+
+		if err != nil {
+			log.Printf("Error retrieving installation ID for repo %d: %v", repoId, err)
+			http.Error(w, "Error retrieving installation ID", http.StatusInternalServerError)
+			return
+		}
+
+		installationToken, err := utils.GetGitHubInstallationToken(installationId)
+		if err != nil {
+			log.Printf("Failed to get GitHub installation token: %v", err)
+			http.Error(w, "Unable to get GitHub installation token", http.StatusInternalServerError)
+			return
+		}
+
+		GHclient := github.NewClient(nil)
+		authedGHClient := GHclient.WithAuthToken(installationToken)
+
+		for i := range collaborators {
+			collaborator := &collaborators[i]
+			if collaborator.UserLoginID != nil {
+				user, _, err := authedGHClient.Users.GetByID(context.Background(), collaborator.GithubUserID)
+				if err != nil {
+					log.Printf("Failed to get user by ID: %v", err)
+					continue
+				}
+				collaborator.GithubAvatarURL = user.GetAvatarURL()
+			}
 		}
 
 		w.Header().Set("Content-Type", "application/json")

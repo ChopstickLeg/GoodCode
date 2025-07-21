@@ -40,7 +40,7 @@ func HandleRepositoryEvent(w http.ResponseWriter, body github.RepositoryEvent) {
 			http.Error(w, "Failed to process repository rename", http.StatusInternalServerError)
 			return
 		}
-	case "created":
+	case "added":
 		if err := handleRepositoryCreated(conn, body); err != nil {
 			log.Printf("Error handling repository creation: %v", err)
 			http.Error(w, "Failed to process repository creation", http.StatusInternalServerError)

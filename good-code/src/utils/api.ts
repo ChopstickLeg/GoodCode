@@ -9,6 +9,8 @@ import {
   UserRepositoryCollaborator,
   AIRoast,
   UserLogin,
+  GitHubAppInstallResponse,
+  GitHubAppSetup,
 } from "../types";
 
 export class APIError extends Error {
@@ -99,5 +101,18 @@ export const signupUser = async (
 export const fetchRepositories = async (): Promise<UserLogin> => {
   const result = await apiFetch<UserLogin>("/api/repositories");
   console.table(result);
+  return result;
+};
+
+export const postGitHubAppInstall = async (
+  data: GitHubAppSetup
+): Promise<GitHubAppInstallResponse> => {
+  const result = await apiFetch<GitHubAppInstallResponse>(
+    "/api/github/install",
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
   return result;
 };
