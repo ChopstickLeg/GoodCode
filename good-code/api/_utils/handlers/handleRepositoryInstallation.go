@@ -51,11 +51,10 @@ func handleRepositoryAdded(w http.ResponseWriter, body github.InstallationReposi
 			continue
 		}
 		err = conn.Create(&db.Repository{
-			ID:             fullRepo.GetID(),
-			Name:           fullRepo.GetName(),
-			Owner:          fullRepo.GetOwner().GetLogin(),
-			OwnerID:        fullRepo.GetOwner().GetID(),
-			InstallationID: body.GetInstallation().GetID(),
+			ID:      fullRepo.GetID(),
+			Name:    fullRepo.GetName(),
+			Owner:   fullRepo.GetOwner().GetLogin(),
+			OwnerID: fullRepo.GetOwner().GetID(),
 		}).Error
 		if err != nil {
 			http.Error(w, "Failed to add repository to database", http.StatusInternalServerError)

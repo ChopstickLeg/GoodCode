@@ -10,6 +10,7 @@ import (
 	db "github.com/chopstickleg/good-code/api/_db"
 	middleware "github.com/chopstickleg/good-code/api/_middleware"
 	utils "github.com/chopstickleg/good-code/api/_utils"
+	handlers "github.com/chopstickleg/good-code/api/_utils/handlers"
 	"github.com/google/go-github/v72/github"
 )
 
@@ -74,6 +75,15 @@ func HandleInstallationEvent(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, "Failed to update user login", http.StatusInternalServerError)
 			log.Printf("Error updating user login: %v", err)
+			return
+		}
+
+		repositories, _, err := ghClient.Apps.ListRepos(context.Background(), &github.ListOptions{})
+
+		err = handlers.HandleAppCreated(conn, installation, repositories.Repositories)
+		if err != nil {
+			http.Error(w, "Failed to handle app creation", http.StatusInternalServerError)
+			log.Printf("Error handling app creation: %v", err)
 			return
 		}
 	})(w, r)

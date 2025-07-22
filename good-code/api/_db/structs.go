@@ -3,12 +3,13 @@ package db
 import "time"
 
 type UserLogin struct {
-	ID       int64  `gorm:"primaryKey;autoIncrement" json:"id"`
-	Email    string `json:"email"`
-	Password []byte `json:"-"`
-	Name     string `json:"name"`
-	GithubID int64  `gorm:"uniqueIndex" json:"github_id"`
-	Enabled  bool   `json:"enabled"`
+	ID             int64  `gorm:"primaryKey;autoIncrement" json:"id"`
+	Email          string `json:"email"`
+	Password       []byte `json:"-"`
+	Name           string `json:"name"`
+	GithubID       int64  `gorm:"uniqueIndex" json:"github_id"`
+	InstallationID int64  `json:"installation_id"`
+	Enabled        bool   `json:"enabled"`
 
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
@@ -21,12 +22,11 @@ type UserLogin struct {
 }
 
 type Repository struct {
-	ID             int64  `gorm:"primaryKey" json:"id"`
-	Name           string `json:"name"`
-	Owner          string `json:"owner"`
-	OwnerID        int64  `json:"owner_id"`
-	InstallationID int64  `json:"installation_id"`
-	Enabled        bool   `gorm:"default:true" json:"enabled"`
+	ID      int64  `gorm:"primaryKey" json:"id"`
+	Name    string `json:"name"`
+	Owner   string `json:"owner"`
+	OwnerID int64  `json:"owner_id"`
+	Enabled bool   `gorm:"default:true" json:"enabled"`
 
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`

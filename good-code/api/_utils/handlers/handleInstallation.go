@@ -14,6 +14,7 @@ import (
 func HandleInstallationEvent(w http.ResponseWriter, body github.InstallationEvent) {
 	action := body.GetAction()
 	installation := body.GetInstallation()
+	repositories := body.Repositories
 
 	log.Printf("Installation event: %s for installation ID: %d", action, installation.GetID())
 
@@ -25,59 +26,74 @@ func HandleInstallationEvent(w http.ResponseWriter, body github.InstallationEven
 
 	switch action {
 	case "deleted":
-		if err := handleAppUninstalled(conn, installation); err != nil {
+		if err := handleAppUninstalled(conn, repositories); err != nil {
 			log.Printf("Error handling app uninstallation: %v", err)
 			http.Error(w, "Failed to process app uninstallation", http.StatusInternalServerError)
 			return
 		}
 	case "suspend":
-		if err := handleAppSuspended(conn, installation); err != nil {
+		if err := handleAppSuspended(conn, repositories); err != nil {
 			log.Printf("Error handling app suspension: %v", err)
 			http.Error(w, "Failed to process app suspension", http.StatusInternalServerError)
 			return
 		}
 	case "unsuspend":
-		if err := handleAppUnsuspended(conn, installation); err != nil {
+		if err := handleAppUnsuspended(conn, repositories); err != nil {
 			log.Printf("Error handling app unsuspension: %v", err)
 			http.Error(w, "Failed to process app unsuspension", http.StatusInternalServerError)
 			return
 		}
-	case "created", "new_permissions_accepted":
-		if err := handleAppCreated(conn, installation, body.Repositories); err != nil {
+	case "new_permissions_accepted":
+		if err := HandleAppCreated(conn, installation, repositories); err != nil {
 			log.Printf("Error handling app creation: %v", err)
 			http.Error(w, "Failed to process app creation", http.StatusInternalServerError)
 			return
 		}
 	default:
+		// Yes I am ignoring create events
 		log.Printf("Unhandled installation action: %s", action)
 	}
 }
 
-func handleAppUninstalled(conn *gorm.DB, installation *github.Installation) error {
-	if err := conn.Model(&db.Repository{}).
-		Where(&db.Repository{InstallationID: installation.GetID()}).
-		Updates(&db.Repository{Enabled: false}).
-		Error; err != nil {
-		log.Printf("failed to fetch repository IDs for installation %d: %v", installation.GetID(), err)
-		return err
+func handleAppUninstalled(conn *gorm.DB, installation []*github.Repository) error {
+	for _, repo := range installation {
+		if err := conn.Model(&db.Repository{}).
+			Where(&db.Repository{ID: repo.GetID()}).
+			Updates(&db.Repository{Enabled: false}).
+			Error; err != nil {
+			log.Printf("failed to fetch repository IDs for installation %d: %v", repo.GetID(), err)
+			return err
+		}
 	}
 	return nil
 }
 
-func handleAppSuspended(conn *gorm.DB, installation *github.Installation) error {
-	return conn.Model(&db.Repository{}).
-		Where(&db.Repository{InstallationID: installation.GetID()}).
-		Updates(db.Repository{Enabled: false}).
-		Error
+func handleAppSuspended(conn *gorm.DB, installation []*github.Repository) error {
+	for _, repo := range installation {
+		if err := conn.Model(&db.Repository{}).
+			Where(&db.Repository{ID: repo.GetID()}).
+			Updates(&db.Repository{Enabled: false}).
+			Error; err != nil {
+			log.Printf("failed to fetch repository IDs for installation %d: %v", repo.GetID(), err)
+			return err
+		}
+	}
+	return nil
 }
 
-func handleAppUnsuspended(conn *gorm.DB, installation *github.Installation) error {
-	return conn.Model(&db.Repository{}).
-		Where(db.Repository{InstallationID: installation.GetID()}).
-		Updates(&db.Repository{Enabled: true}).
-		Error
+func handleAppUnsuspended(conn *gorm.DB, installation []*github.Repository) error {
+	for _, repo := range installation {
+		if err := conn.Model(&db.Repository{}).
+			Where(&db.Repository{ID: repo.GetID()}).
+			Updates(&db.Repository{Enabled: true}).
+			Error; err != nil {
+			log.Printf("failed to fetch repository IDs for installation %d: %v", repo.GetID(), err)
+			return err
+		}
+	}
+	return nil
 }
-func handleAppCreated(conn *gorm.DB, installation *github.Installation, repos []*github.Repository) error {
+func HandleAppCreated(conn *gorm.DB, installation *github.Installation, repos []*github.Repository) error {
 	for _, repo := range repos {
 		var count int64
 		err := conn.Model(&db.Repository{}).
@@ -95,11 +111,10 @@ func handleAppCreated(conn *gorm.DB, installation *github.Installation, repos []
 		}
 		if count == 0 {
 			newRepo := db.Repository{
-				ID:             repo.GetID(),
-				Name:           repo.GetName(),
-				Owner:          login,
-				OwnerID:        ownerID,
-				InstallationID: installation.GetID(),
+				ID:      repo.GetID(),
+				Name:    repo.GetName(),
+				Owner:   login,
+				OwnerID: ownerID,
 			}
 			if err := conn.Create(&newRepo).Error; err != nil {
 				log.Printf("Failed to create repository record for %s: %v", repo.GetFullName(), err)

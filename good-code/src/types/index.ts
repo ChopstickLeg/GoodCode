@@ -3,6 +3,7 @@ export interface UserLogin {
   email: string;
   name: string;
   github_id: bigint;
+  installation_id: bigint;
   enabled: boolean;
   created_at: string;
   updated_at: string;
@@ -15,7 +16,6 @@ export interface Repository {
   name: string;
   owner: string;
   owner_id: bigint;
-  installation_id: bigint;
   created_at: string;
   updated_at: string;
   ai_roasts: AIRoast[];

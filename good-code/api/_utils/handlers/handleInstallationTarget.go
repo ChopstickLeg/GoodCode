@@ -28,7 +28,7 @@ func HandleInstallationTargetEvent(w http.ResponseWriter, body github.Installati
 	}
 
 	err = conn.Model(&db.Repository{}).
-		Where(&db.Repository{InstallationID: installation.GetID()}).
+		Where(&db.Repository{ID: repository.GetID()}).
 		Updates(&db.Repository{Owner: repository.GetOwner().GetLogin()}).
 		Error
 
