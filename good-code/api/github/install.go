@@ -95,5 +95,10 @@ func HandleInstallationEvent(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error handling app creation: %v", err)
 			return
 		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]bool{
+			"success": true,
+		})
 	})(w, r)
 }
