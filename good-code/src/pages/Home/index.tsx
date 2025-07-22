@@ -39,6 +39,14 @@ const Home: React.FC = () => {
 
   const { owned_repositories = [], collaborating_repositories = [] } = data;
 
+  if (data.github_id === BigInt(0)) {
+    return (
+      <div className="max-w-md mx-auto mt-8">
+        <GitHubAppInstall />
+      </div>
+    );
+  }
+
   const validOwnedRepos = filterValidRepositories(owned_repositories);
   const validCollaboratingRepos = filterValidRepositories(
     collaborating_repositories
@@ -49,14 +57,6 @@ const Home: React.FC = () => {
     validCollaboratingRepos,
     5
   );
-
-  if (data.github_id === null) {
-    return (
-      <div className="max-w-md mx-auto mt-8">
-        <GitHubAppInstall />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen">
