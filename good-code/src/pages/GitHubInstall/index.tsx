@@ -28,10 +28,10 @@ const GitHubInstall: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (isError || (data && !data.success)) {
-      navigate("/login", { state: { from: location }, replace: true });
-    } else if (data && data.success) {
+    if (data && data.success) {
       navigate("/", { replace: true });
+    } else if (isError || (data && !data.success)) {
+      navigate("/login", { state: { from: location }, replace: true });
     }
   }, [data, isError, navigate, location]);
 
