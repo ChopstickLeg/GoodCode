@@ -11,33 +11,26 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/go-github/v72/github"
 )
 
-var (
-	cachedJWT      string
-	cachedJWTExp   int64
-	cachedJWTMutex sync.Mutex
-)
-
-func GenerateGitHubJWT() (string, int64, error) {
+func GenerateGitHubJWT() (string, error) {
 	log.Println("Starting GitHub JWT generation")
 
 	clientId := os.Getenv("GITHUB_APP_CLIENT_ID")
 	if clientId == "" {
 		log.Println("ERROR: GITHUB_APP_CLIENT_ID environment variable not set")
-		return "", 0, errors.New("GITHUB_APP_CLIENT_ID environment variable not set")
+		return "", errors.New("GITHUB_APP_CLIENT_ID environment variable not set")
 	}
 	log.Printf("GitHub App Client ID found: %s", clientId)
 
 	privateKeyPEM := os.Getenv("GITHUB_APP_PRIVATE_KEY")
 	if privateKeyPEM == "" {
 		log.Println("ERROR: GITHUB_APP_PRIVATE_KEY environment variable not set")
-		return "", 0, errors.New("GITHUB_APP_PRIVATE_KEY environment variable not set")
+		return "", errors.New("GITHUB_APP_PRIVATE_KEY environment variable not set")
 	}
 	log.Printf("GitHub App Private Key found (length: %d)", len(privateKeyPEM))
 
@@ -45,7 +38,7 @@ func GenerateGitHubJWT() (string, int64, error) {
 	block, _ := pem.Decode([]byte(privateKeyPEM))
 	if block == nil {
 		log.Println("ERROR: Failed to parse PEM block containing the private key")
-		return "", 0, errors.New("failed to parse PEM block containing the private key")
+		return "", errors.New("failed to parse PEM block containing the private key")
 	}
 	log.Printf("PEM block type: %s", block.Type)
 
@@ -71,7 +64,7 @@ func GenerateGitHubJWT() (string, int64, error) {
 
 	if err != nil {
 		log.Printf("ERROR: Failed to parse private key: %v", err)
-		return "", 0, fmt.Errorf("failed to parse private key: %w", err)
+		return "", fmt.Errorf("failed to parse private key: %w", err)
 	}
 	log.Println("Successfully parsed private key")
 
@@ -95,41 +88,11 @@ func GenerateGitHubJWT() (string, int64, error) {
 	if err != nil {
 		log.Printf("ERROR: Failed to sign JWT token: %v", err)
 		log.Printf("Error type: %T", err)
-		return "", 0, fmt.Errorf("JWT signing failed: %w", err)
+		return "", fmt.Errorf("JWT signing failed: %w", err)
 	}
 
 	log.Printf("Successfully generated JWT token (length: %d)", len(jwtToken))
-	return jwtToken, claims["exp"].(int64), nil
-}
-
-func GetGitHubJWT() (string, error) {
-	log.Println("Attempting to get GitHub JWT (checking cache first)")
-	cachedJWTMutex.Lock()
-	defer cachedJWTMutex.Unlock()
-
-	now := time.Now().Unix()
-	if cachedJWT != "" && cachedJWTExp > now {
-		log.Printf("Using cached JWT (expires at: %d, current time: %d)", cachedJWTExp, now)
-		return cachedJWT, nil
-	}
-
-	if cachedJWT != "" {
-		log.Printf("Cached JWT expired (expired at: %d, current time: %d)", cachedJWTExp, now)
-	} else {
-		log.Println("No cached JWT found")
-	}
-
-	log.Println("Generating new JWT token")
-	token, exp, err := GenerateGitHubJWT()
-	if err != nil {
-		log.Printf("ERROR: Failed to generate new JWT: %v", err)
-		return "", err
-	}
-
-	cachedJWT = token
-	cachedJWTExp = exp
-	log.Printf("Successfully cached new JWT (expires at: %d)", exp)
-	return cachedJWT, nil
+	return jwtToken, nil
 }
 
 func VerifyGitHubSignature(payload []byte, signature string) bool {
@@ -158,7 +121,7 @@ func VerifyGitHubSignature(payload []byte, signature string) bool {
 func GetGitHubInstallationToken(installationID int64) (string, error) {
 	log.Printf("Getting installation access token for installation ID: %d", installationID)
 
-	jwt, err := GetGitHubJWT()
+	jwt, err := GenerateGitHubJWT()
 	if err != nil {
 		log.Printf("ERROR: Failed to get GitHub JWT: %v", err)
 		return "", fmt.Errorf("failed to get GitHub JWT: %w", err)
