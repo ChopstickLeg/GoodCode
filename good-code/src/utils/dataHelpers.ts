@@ -81,7 +81,7 @@ export const isValidRepository = (repo: unknown): repo is Repository => {
 };
 
 export const filterValidRepositories = (
-  repositories: unknown[]
+  repositories: Repository[]
 ): Repository[] => {
-  return repositories.filter(isValidRepository);
+  return !repositories ? [] : repositories.filter(isValidRepository);
 };
