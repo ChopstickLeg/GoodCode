@@ -67,10 +67,11 @@ func HandleInstallationEvent(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = conn.Model(&db.UserLogin{}).Updates(db.UserLogin{
-			GithubID: installation.GetAccount().GetID(),
-		}).
+		err = conn.Model(&db.UserLogin{}).
 			Where(&db.UserLogin{ID: userid}).
+			Updates(db.UserLogin{
+				GithubID: installation.GetAccount().GetID(),
+			}).
 			Error
 		if err != nil {
 			http.Error(w, "Failed to update user login", http.StatusInternalServerError)
