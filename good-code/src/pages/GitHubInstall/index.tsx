@@ -4,11 +4,7 @@ import { LoadingSpinner } from "../../components/Common";
 import { GitHubAppSetup } from "../../types";
 import { useGitHubAppInstall } from "../../hooks";
 
-interface GitHubInstallProps {
-  children?: React.ReactNode;
-}
-
-const GitHubInstall: React.FC<GitHubInstallProps> = ({ children }) => {
+const GitHubInstall: React.FC = () => {
   const params = new URLSearchParams(window.location.search);
   const installationId = params.get("installation_id");
   const setupAction = params.get("setup_action");
@@ -17,6 +13,8 @@ const GitHubInstall: React.FC<GitHubInstallProps> = ({ children }) => {
     installation_id: installationId || "",
     setup_action: setupAction || "",
   } as GitHubAppSetup;
+
+  console.log("GitHub Install Data:", installData);
 
   const { data, isError, isPending } = useGitHubAppInstall(installData);
   const navigate = useNavigate();
@@ -40,7 +38,7 @@ const GitHubInstall: React.FC<GitHubInstallProps> = ({ children }) => {
     return null;
   }
 
-  return <>{children}</>;
+  navigate("/");
 };
 
 export default GitHubInstall;

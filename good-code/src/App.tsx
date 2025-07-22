@@ -50,9 +50,7 @@ function App() {
           element={
             <PrivateRoute>
               <Layout>
-                <GitHubInstall>
-                  <Home />
-                </GitHubInstall>
+                <GitHubInstall />
               </Layout>
             </PrivateRoute>
           }
