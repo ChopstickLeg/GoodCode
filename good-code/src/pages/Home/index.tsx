@@ -37,7 +37,7 @@ const Home: React.FC = () => {
     );
   }
 
-  const { owned_repositories, collaborating_repositories } = data;
+  const { owned_repositories = [], collaborating_repositories = [] } = data;
 
   const validOwnedRepos = filterValidRepositories(owned_repositories);
   const validCollaboratingRepos = filterValidRepositories(

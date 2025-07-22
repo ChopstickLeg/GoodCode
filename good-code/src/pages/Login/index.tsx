@@ -105,7 +105,7 @@ const Login: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate("/signup")}
-                className="font-semibold text-blue-600 dark:text-blue-200 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
+                className="font-semibold text-blue-600 dark:text-blue-200 hover:text-blue-700 dark:hover:text-blue-100 transition-colors duration-200"
               >
                 Sign up
               </button>

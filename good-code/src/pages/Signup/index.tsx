@@ -129,7 +129,7 @@ const SignUp: React.FC = () => {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
             >
               {isPending ? (
                 <div className="flex items-center justify-center space-x-2">
@@ -148,7 +148,7 @@ const SignUp: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate("/login")}
-                className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
+                className="font-semibold text-blue-600 dark:text-blue-200 hover:text-blue-700 dark:hover:text-blue-100 transition-colors duration-200"
               >
                 Log in
               </button>
