@@ -49,11 +49,11 @@ func HandleInstallationEvent(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		token, err := utils.GetGitHubInstallationToken(body.InstallationID)
+		token, err := utils.GenerateGitHubJWT()
 
-		ghClient := github.NewClient(nil).WithAuthToken(token)
+		ghClientJWT := github.NewClient(nil).WithAuthToken(token)
 
-		installation, _, err := ghClient.Apps.GetInstallation(context.Background(), body.InstallationID)
+		installation, _, err := ghClientJWT.Apps.GetInstallation(context.Background(), body.InstallationID)
 		if err != nil {
 			http.Error(w, "Failed to get installation details", http.StatusInternalServerError)
 			log.Printf("Error getting installation details: %v", err)
@@ -77,6 +77,14 @@ func HandleInstallationEvent(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error updating user login: %v", err)
 			return
 		}
+
+		installationToken, err := utils.GetGitHubInstallationToken(installation.GetID())
+		if err != nil {
+			http.Error(w, "Failed to get GitHub installation token", http.StatusInternalServerError)
+			log.Printf("Error getting GitHub installation token: %v", err)
+			return
+		}
+		ghClient := github.NewClient(nil).WithAuthToken(installationToken)
 
 		repositories, _, err := ghClient.Apps.ListRepos(context.Background(), &github.ListOptions{})
 
