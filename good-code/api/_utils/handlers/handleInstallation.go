@@ -57,9 +57,15 @@ func HandleInstallationEvent(w http.ResponseWriter, body github.InstallationEven
 
 func handleAppUninstalled(conn *gorm.DB, installation []*github.Repository) error {
 	for _, repo := range installation {
+		if err := conn.Model(&db.UserRepositoryCollaborator{}).
+			Where(&db.UserRepositoryCollaborator{RepositoryID: repo.GetID()}).
+			Delete(&db.UserRepositoryCollaborator{}).
+			Error; err != nil {
+			log.Printf("failed to fetch collaborator IDs for installation %d: %v", repo.GetID(), err)
+		}
 		if err := conn.Model(&db.Repository{}).
 			Where(&db.Repository{ID: repo.GetID()}).
-			Updates(&db.Repository{Enabled: false}).
+			Delete(&db.Repository{}).
 			Error; err != nil {
 			log.Printf("failed to fetch repository IDs for installation %d: %v", repo.GetID(), err)
 			return err
