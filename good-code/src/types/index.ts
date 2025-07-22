@@ -75,7 +75,7 @@ export interface SignupResponse {
 }
 
 export interface GitHubAppSetup {
-  installation_id: string;
+  installation_id: bigint;
   setup_action: string;
 }
 

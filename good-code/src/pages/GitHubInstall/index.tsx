@@ -10,7 +10,7 @@ const GitHubInstall: React.FC = () => {
   const setupAction = params.get("setup_action");
 
   const installData = {
-    installation_id: installationId || "",
+    installation_id: installationId ? BigInt(installationId) : 0n,
     setup_action: setupAction || "",
   } as GitHubAppSetup;
 
