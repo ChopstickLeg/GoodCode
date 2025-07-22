@@ -16,9 +16,16 @@ const GitHubInstall: React.FC = () => {
 
   console.log("GitHub Install Data:", installData);
 
-  const { data, isError, isPending } = useGitHubAppInstall(installData);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { mutate, data, isError, isPending } = useGitHubAppInstall(installData);
+
+  useEffect(() => {
+    if (installData.installation_id) {
+      mutate(installData);
+    }
+  }, []);
 
   useEffect(() => {
     if (isError || (data && !data.success)) {
