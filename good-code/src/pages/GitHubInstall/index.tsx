@@ -23,6 +23,8 @@ const GitHubInstall: React.FC = () => {
   useEffect(() => {
     if (isError || (data && !data.success)) {
       navigate("/login", { state: { from: location }, replace: true });
+    } else if (data && data.success) {
+      navigate("/", { replace: true });
     }
   }, [data, isError, navigate, location]);
 
@@ -34,11 +36,7 @@ const GitHubInstall: React.FC = () => {
     );
   }
 
-  if (isError || !data?.success) {
-    return null;
-  }
-
-  navigate("/");
+  return null;
 };
 
 export default GitHubInstall;
