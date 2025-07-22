@@ -70,7 +70,8 @@ func HandleInstallationEvent(w http.ResponseWriter, r *http.Request) {
 		err = conn.Model(&db.UserLogin{}).
 			Where(&db.UserLogin{ID: userid}).
 			Updates(db.UserLogin{
-				GithubID: installation.GetID(),
+				GithubID:       installation.GetAccount().GetID(),
+				InstallationID: installation.GetID(),
 			}).
 			Error
 		if err != nil {
