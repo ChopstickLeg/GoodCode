@@ -39,7 +39,7 @@ const Home: React.FC = () => {
 
   const { owned_repositories = [], collaborating_repositories = [] } = data;
 
-  if (data.github_id === BigInt(0)) {
+  if (data.github_id == BigInt(0)) {
     return (
       <div className="max-w-md mx-auto mt-8">
         <GitHubAppInstall />
