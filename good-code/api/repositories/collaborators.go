@@ -84,7 +84,7 @@ func GetCollaboratorsHandler(w http.ResponseWriter, r *http.Request) {
 		var installationId int64
 		err = conn.Model(&db.UserLogin{}).
 			Select("user_logins.installation_id").
-			Joins("JOIN repositories ON repositories.owner_id = user_logins.id").
+			Joins("JOIN repositories ON repositories.owner_id = user_logins.github_id").
 			Where("repositories.id = ?", repoId).
 			Scan(&installationId).
 			Error
