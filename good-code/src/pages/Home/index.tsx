@@ -167,6 +167,10 @@ const Home: React.FC = () => {
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
             <RoastList roasts={recentRoasts} title="Recent Roasts" limit={5} />
           </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 mt-8 xl:col-span-2">
+            <GitHubAppInstall hasInstalled={true} />
+          </div>
         </div>
 
         {validCollaboratingRepos.length > 0 && (
@@ -180,9 +184,6 @@ const Home: React.FC = () => {
             />
           </div>
         )}
-      </div>
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-        <GitHubAppInstall hasInstalled={true} />
       </div>
     </div>
   );
