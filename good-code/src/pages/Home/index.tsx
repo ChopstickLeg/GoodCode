@@ -42,7 +42,7 @@ const Home: React.FC = () => {
   if (data.installation_id == BigInt(0)) {
     return (
       <div className="max-w-md mx-auto mt-8">
-        <GitHubAppInstall />
+        <GitHubAppInstall hasInstalled={false} />
       </div>
     );
   }
@@ -180,6 +180,9 @@ const Home: React.FC = () => {
             />
           </div>
         )}
+      </div>
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+        <GitHubAppInstall hasInstalled={true} />
       </div>
     </div>
   );
