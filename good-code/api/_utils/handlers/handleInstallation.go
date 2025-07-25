@@ -70,6 +70,12 @@ func handleAppUninstalled(conn *gorm.DB, installation []*github.Repository) erro
 			log.Printf("failed to fetch repository IDs for installation %d: %v", repo.GetID(), err)
 			return err
 		}
+		if err := conn.Model(&db.UserLogin{}).
+			Where(&db.UserLogin{GithubID: repo.GetOwner().GetID()}).
+			Updates(&db.UserLogin{InstallationID: 0}).
+			Error; err != nil {
+			log.Printf("failed to update user login for repo %d: %v", repo.GetID(), err)
+		}
 	}
 	return nil
 }
