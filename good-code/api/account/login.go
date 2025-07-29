@@ -6,89 +6,95 @@ import (
 	"os"
 	"time"
 
-	"github.com/chopstickleg/good-code/api/_db"
+	db "github.com/chopstickleg/good-code/api/_db"
+	middleware "github.com/chopstickleg/good-code/api/_middleware"
 	"github.com/dgrijalva/jwt-go"
+	"gorm.io/gorm"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := db.GetDB()
-	if err != nil {
-		http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
-		return
-	}
+func Handler(w http.ResponseWriter, r *http.Request) {
+	middleware.AllowMethods("POST")(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := db.GetDB()
+		if err != nil {
+			http.Error(w, "Failed to connect to the database", http.StatusInternalServerError)
+			return
+		}
 
-	var req struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
-	}
+		var req struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request", http.StatusBadRequest)
+			return
+		}
+		var user db.UserLogin
+		err = conn.Model(&db.UserLogin{}).
+			Where(&db.UserLogin{Email: req.Email}).
+			First(&user).
+			Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+				return
+			}
+			http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if !user.Enabled {
+			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+			return
+		}
 
-	var user db.User_login
-	err = conn.Model(&db.User_login{}).
-		Where("email = ?", req.Email).
-		Find(&user).
-		Error
-	if err != nil {
-		http.Error(w, "Error querying DB: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+		incoming := []byte(req.Password)
 
-	if !user.Enabled {
-		http.Error(w, "User does not exist", http.StatusUnauthorized)
-		return
-	}
+		matchErr := bcrypt.CompareHashAndPassword(user.Password, incoming)
+		if matchErr != nil {
+			http.Error(w, "Invalid password", http.StatusUnauthorized)
+			return
+		}
 
-	incoming := []byte(req.Password)
+		secretKey := os.Getenv("JWT_SECRET_KEY")
+		if secretKey == "" {
+			http.Error(w, "JWT_SECRET_KEY environment variable not set", http.StatusInternalServerError)
+			return
+		}
+		token := jwt.New(jwt.SigningMethodHS256)
+		claims := token.Claims.(jwt.MapClaims)
+		claims["iss"] = "www.good-code.net"
+		claims["id"] = user.ID
+		claims["email"] = req.Email
+		claims["name"] = user.Name
+		claims["iat"] = time.Now().Unix()
+		claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
-	matchErr := bcrypt.CompareHashAndPassword(user.Password, incoming)
-	if matchErr != nil {
-		http.Error(w, "Invalid password", http.StatusUnauthorized)
-		return
-	}
+		signedToken, err := token.SignedString([]byte(secretKey))
+		if err != nil {
+			http.Error(w, "Failed to generate JWT token: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	secretKey := os.Getenv("JWT_SECRET_KEY")
-	if secretKey == "" {
-		http.Error(w, "JWT_SECRET_KEY environment variable not set", http.StatusInternalServerError)
-		return
-	}
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["iss"] = "www.good-code.net"
-	claims["id"] = user.ID
-	claims["email"] = req.Email
-	claims["name"] = user.Name
-	claims["iat"] = time.Now().Unix()
-	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+		//oven
+		cookie := &http.Cookie{
+			Name:     "auth",
+			Value:    signedToken,
+			Path:     "/",
+			Expires:  time.Now().Add(time.Hour * 24),
+			Secure:   true,
+			HttpOnly: true,
+			SameSite: http.SameSiteLaxMode,
+		}
+		http.SetCookie(w, cookie)
 
-	signedToken, err := token.SignedString([]byte(secretKey))
-	if err != nil {
-		http.Error(w, "Failed to generate JWT token: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+		w.Header().Set("Content-Type", "application/json")
+		response := json.NewEncoder(w)
 
-	//oven
-	cookie := &http.Cookie{
-		Name:     "auth",
-		Value:    signedToken,
-		Path:     "/",
-		Expires:  time.Now().Add(time.Hour * 24),
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-	http.SetCookie(w, cookie)
-
-	w.Header().Set("Content-Type", "application/json")
-	response := json.NewEncoder(w)
-
-	err = response.Encode(map[string]bool{"success": true})
-	if err != nil {
-		http.Error(w, "Failed to send response: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+		err = response.Encode(map[string]bool{"success": true})
+		if err != nil {
+			http.Error(w, "Failed to send response: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})(w, r)
 }

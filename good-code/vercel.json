@@ -1,5 +1,20 @@
-{ 
-  "rewrites": [ 
-    { "source": "/((?!api/.*).*)", "destination": "/" } 
-    ] 
+{
+  "rewrites": [
+    {
+      "source": "/api/repositories/(.*)/roasts",
+      "destination": "/api/repositories/roasts?repoId=$1"
+    },
+    {
+      "source": "/api/repositories/(.*)/collaborators",
+      "destination": "/api/repositories/collaborators?repoId=$1"
+    },
+    {
+      "source": "/api/repositories/([0-9]+)",
+      "destination": "/api/repositories/repository?repoId=$1"
+    },
+    {
+      "source": "/((?!api/.*).*)",
+      "destination": "/"
+    }
+  ]
 }

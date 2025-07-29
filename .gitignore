@@ -49,3 +49,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+
+diff.txt

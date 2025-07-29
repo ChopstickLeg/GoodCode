@@ -32,20 +32,31 @@ func GetDB() (*gorm.DB, error) {
 	)
 
 	dbOnce.Do(func() {
-		dbURL := os.Getenv("DATABASE_DATABASE_URL")
+		dbURL := os.Getenv("DATABASE_URL")
 		if dbURL == "" {
 			err = errors.New("DATABASE_URL environment variable not set")
+			return
 		}
 
-		conn, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{
+		conn, dbErr := gorm.Open(postgres.Open(dbURL), &gorm.Config{
 			Logger: logger,
 		})
-		if err != nil {
-			log.Fatal("Failed to connect to Neon Postgres:", err)
+		if dbErr != nil {
+			err = dbErr
+			log.Printf("Failed to connect to Neon Postgres: %v", dbErr)
+			return
 		}
 
 		db = conn
 	})
 
-	return db, err
+	if err != nil {
+		return nil, err
+	}
+
+	if db == nil {
+		return nil, errors.New("database connection not initialized")
+	}
+
+	return db, nil
 }
