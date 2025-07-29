@@ -43,50 +43,54 @@ export const RoastCard: React.FC<RoastCardProps> = ({
 
   const repository = data.repo;
 
+  const linkToPR = `https://github.com/${repository.owner}/${repository.name}/pull/${roast.pull_request_number}`;
+
   return (
-    <div
-      className={`p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 ${className}`}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <div className="flex items-center space-x-2 mb-3">
-            <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-              Pull Request #{roast.pull_request_number} in{" "}
-              <span className="font-bold text-blue-600 dark:text-blue-400">
-                {repository.name}
-              </span>
+    <a href={linkToPR} target="_blank" rel="noopener noreferrer">
+      <div
+        className={`p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 ${className}`}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-3">
+              <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                Pull Request #{roast.pull_request_number} in{" "}
+                <span className="font-bold text-blue-600 dark:text-blue-400">
+                  {repository.name}
+                </span>
+              </p>
+            </div>
+            <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
+              {truncateText(roast.content, 150)}
             </p>
           </div>
-          <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed bg-gray-50 dark:bg-gray-700 p-3 rounded-lg border border-gray-100 dark:border-gray-600">
-            {truncateText(roast.content, 150)}
-          </p>
         </div>
-      </div>
-      <div className="flex items-center justify-between mt-4">
-        <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1">
-          <svg
-            className="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>{formatRelativeTime(roast.created_at)}</span>
-        </span>
-        <div className="flex items-center space-x-2">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">
-            PR #{roast.pull_request_number}
+        <div className="flex items-center justify-between mt-4">
+          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center space-x-1">
+            <svg
+              className="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{formatRelativeTime(roast.created_at)}</span>
           </span>
+          <div className="flex items-center space-x-2">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">
+              PR #{roast.pull_request_number}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </a>
   );
 };
 
